@@ -1,0 +1,12 @@
+name: crop-yield-estimate-env
+dependencies:
+  - python=3.10.*
+  - pip
+  - pip:
+      - jupyter
+      - scikit-learn
+      - wandb
+      - pandas
+      - numpy
+      - plotly
+      - matplotlib
