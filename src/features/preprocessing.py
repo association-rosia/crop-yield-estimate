@@ -4,7 +4,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class DataPostProcessor(BaseEstimator, TransformerMixin):
-    def __init__(self, missing_thr=50, fill_mode='median'):
+    def __init__(self, fillna=True, missing_thr=50, fill_mode='median'):
+
+        self.fillna = fillna
         self.missing_thr = missing_thr
         self.fill_mode = fill_mode
 
@@ -28,23 +30,30 @@ class DataPostProcessor(BaseEstimator, TransformerMixin):
                                ('1tdUrea', 'FirstTopDressFertUrea')]
 
         self.to_delete_cols = []
-        self.to_fill_values = []
+        self.to_fill_cols = []
+        self.to_fill_values = {}
         self.unique_value_cols = []
 
-    def fit_transform(self, X, y=None, **fit_params: dict):
-        X = X.set_index('ID')
-
+    def one_hot_list(self, X):
         for col in self.list_cols:
             split_col = X[col].str.split().explode()
-            split_col = pd.get_dummies(split_col, prefix=col, prefix_sep='')
+            split_col = pd.get_dummies(split_col, dummy_na=True, prefix=col, prefix_sep='')
             split_col = split_col.astype(int).groupby(level=0).max()
+            split_col.loc[split_col[f'{col}nan'] == 1] = np.nan
+            split_col.drop(columns=f'{col}nan', inplace=True)
             X = X.join(split_col)
-            X = X.drop(columns=[col])
+            X.drop(columns=col, inplace=True)
 
+        return X
+
+    def fill_correlated_list(self, X):
         for col1, col2 in self.corr_list_cols:
             X.loc[X[col2] == 0, col1] = 0
-            X = X.drop(columns=[col2])
+            X.drop(columns=col2, inplace=True)
 
+        return X
+
+    def cyclical_date_encoding(self, X):
         for col in self.date_cols:
             X[col] = pd.to_datetime(X[col])
             X[f'{col}Year'] = X[col].dt.year.astype('string')
@@ -52,54 +61,96 @@ class DataPostProcessor(BaseEstimator, TransformerMixin):
             X[f'{col}DayOfYearSin'] = np.sin(2 * np.pi * X[f'{col}DayOfYear'] / 365)
             X[f'{col}DayOfYearCos'] = np.cos(2 * np.pi * X[f'{col}DayOfYear'] / 365)
             self.cat_cols.append(f'{col}Year')
-            X = X.drop(columns=[col, f'{col}DayOfYear'])
+            X.drop(columns=[col, f'{col}DayOfYear'], inplace=True)
 
+        return X
+
+    def one_hot_encoding(self, X):
         for col in self.cat_cols:
             X[col] = X[col].fillna('Unknown')
             ohe_col = pd.get_dummies(X[col], prefix=col, prefix_sep='')
             ohe_col = ohe_col.astype(int).groupby(level=0).max()
             X = X.join(ohe_col)
-            X = X.drop(columns=[col])
+            X.drop(columns=col, inplace=True)
 
-        missing_column = X.isnull().sum() / len(X) * 100 > self.missing_thr
-        to_delete_cols = missing_column[missing_column].index.tolist()
-        X = X.drop(columns=to_delete_cols)
+        return X
 
-        missing_column = X.isnull().sum() / len(X) * 100 > 0
-        to_fill_cols = missing_column[missing_column].index.tolist()
+    def delete_empty_columns(self, X):
+        X.drop(columns=self.to_delete_cols, inplace=True)
 
-        for col in to_fill_cols:
+        return X
+
+    def fill_numerical_columns(self, X):
+        for col in self.to_fill_cols:
+            X[col] = X[col].fillna(self.to_fill_values[col])
+
+        return X
+
+    def compute_filling_values(self, X):
+        for col in self.to_fill_cols:
             if self.fill_mode == 'mean':
                 value = X[col].mean()
-                X[col] = X[col].fillna(value)
             elif self.fill_mode == 'median':
                 value = X[col].median()
-                X[col] = X[col].fillna(value)
             else:
-                raise ValueError('Unknown filling mode')
+                raise NotImplementedError('Unknown filling mode')
 
-            self.to_fill_values.append({col: value})
+            self.to_fill_values[col] = value
 
+    def preprocess(self, X):
+        X.set_index('ID', inplace=True)
+        X = self.one_hot_list(X)
+        X = self.fill_correlated_list(X)
+        X = self.cyclical_date_encoding(X)
+
+        if self.fillna:
+            X = self.one_hot_encoding(X)
+
+        return X
+
+    def get_unique_value_cols(self, X):
         for col in X.columns:
             num_unique_values = len(X[col].unique())
 
             if num_unique_values == 1:
-                X = X.drop(columns=[col])
                 self.unique_value_cols.append(col)
 
-        # TODO : scale data
+    def delete_unique_value_cols(self, X):
+        for col in self.unique_value_cols:
+            X.drop(columns=col, inplace=True)
 
         return X
 
-    def transform(self, X, y=None):
-        return
+    def fit(self, X):
+        nan_columns = X.isnull().sum() / len(X) * 100
+        nan_columns_to_delete = nan_columns > self.missing_thr
+        self.to_delete_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
+
+        if self.fillna:
+            nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.missing_thr)
+            self.to_fill_cols = nan_columns_to_fill[nan_columns_to_fill].index.tolist()
+
+            self.compute_filling_values(X)
+            self.get_unique_value_cols(X)
+
+    def transform(self, X):
+        X = self.delete_empty_columns(X)
+        X = self.delete_unique_value_cols(X)
+
+        if self.fillna:
+            X = self.fill_numerical_columns(X)
+
+        return X
 
 
 if __name__ == '__main__':
     data_path = '../../data/raw/Train.csv'
-    dpp = DataPostProcessor()
+    dpp = DataPostProcessor(fillna=False)
 
     df = pd.read_csv(data_path)
-    df = dpp.fit_transform(df)
+
+    df = dpp.preprocess(df)
+    dpp.fit(df)
+    df = dpp.transform(df)
 
     print()
