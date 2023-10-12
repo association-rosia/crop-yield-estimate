@@ -1,4 +1,4 @@
-# Digital Green Crop Yield Estimate Challenge
+# 🌾 Digital Green Crop Yield Estimate Challenge
 
 <img src='assets/banner.png'>
 
