@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 from typing_extensions import Self
 import json
 
@@ -16,7 +16,7 @@ from src.features.config import CYEConfigPreProcessor
 
 
 class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
-    list_cols = ['LandPreparationMethod', 'NursDetFactor', 'TransDetFactor', 'OrgFertilizers',
+    LIST_COLS = ['LandPreparationMethod', 'NursDetFactor', 'TransDetFactor', 'OrgFertilizers',
                  'CropbasalFerts', 'FirstTopDressFert']
 
     # num_cols = ['CultLand', 'CropCultLand', 'CropTillageDepth', 'SeedlingsPerPit',
@@ -24,13 +24,13 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     #             'NoFertilizerAppln', 'BasalDAP', 'BasalUrea', '1tdUrea', '1appDaysUrea', '2tdUrea',
     #             '2appDaysUrea', 'Harv_hand_rent', 'Residue_length', 'Residue_perc', 'Acre', 'Yield']
 
-    date_cols = ['CropTillageDate', 'RcNursEstDate', 'SeedingSowingTransplanting', 'Harv_date', 'Threshing_date']
+    DATE_COLS = ['CropTillageDate', 'RcNursEstDate', 'SeedingSowingTransplanting', 'Harv_date', 'Threshing_date']
     
-    cat_cols = ['District', 'Block', 'CropEstMethod', 'TransplantingIrrigationSource',
+    CAT_COLS = ['District', 'Block', 'CropEstMethod', 'TransplantingIrrigationSource',
                 'TransplantingIrrigationPowerSource', 'PCropSolidOrgFertAppMethod', 'MineralFertAppMethod',
-                'MineralFertAppMethod.1', 'Harv_method', 'Threshing_method', 'Stubble_use'] + [f'{col}Year' for col in date_cols]
+                'MineralFertAppMethod.1', 'Harv_method', 'Threshing_method', 'Stubble_use'] + [f'{col}Year' for col in DATE_COLS]
 
-    corr_list_cols = [('CropOrgFYM', 'OrgFertilizersFYM'), ('Ganaura', 'OrgFertilizersGanaura'),
+    CORR_LIST_COLS = [('CropOrgFYM', 'OrgFertilizersFYM'), ('Ganaura', 'OrgFertilizersGanaura'),
                     ('BasalDAP', 'CropbasalFertsDAP'), ('BasalUrea', 'CropbasalFertsUrea'),
                     ('1tdUrea', 'FirstTopDressFertUrea')]
     def __init__(
@@ -46,7 +46,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.unique_value_cols = []
 
     def one_hot_list(self, X: DataFrame) -> DataFrame:
-        for col in self.list_cols:
+        for col in self.LIST_COLS:
             split_col = X[col].str.split().explode()
             split_col = pd.get_dummies(split_col, dummy_na=True, prefix=col, prefix_sep='')
             split_col = split_col.astype(int).groupby(level=0).max()
@@ -58,14 +58,14 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def fill_correlated_list(self, X: DataFrame) -> DataFrame:
-        for col1, col2 in self.corr_list_cols:
+        for col1, col2 in self.CORR_LIST_COLS:
             X.loc[X[col2] == 0, col1] = 0
             X.drop(columns=col2, inplace=True)
 
         return X
 
     def cyclical_date_encoding(self, X: DataFrame) -> DataFrame:
-        for col in self.date_cols:
+        for col in self.DATE_COLS:
             X[col] = pd.to_datetime(X[col])
             X[f'{col}Year'] = X[col].dt.year.astype('string')
             X[f'{col}DayOfYear'] = X[col].dt.dayofyear
@@ -76,7 +76,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def one_hot_encoding(self, X: DataFrame) -> DataFrame:
-        for col in self.cat_cols:
+        for col in self.CAT_COLS:
             X[col] = X[col].fillna('Unknown')
             ohe_col = pd.get_dummies(X[col], prefix=col, prefix_sep='')
             ohe_col = ohe_col.astype(int).groupby(level=0).max()
@@ -131,7 +131,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def fit(self, X: DataFrame):
+    def fit(self, X: DataFrame) -> Self:
         nan_columns = X.isnull().sum() / len(X) * 100
         nan_columns_to_delete = nan_columns > self.config.missing_thr
         self.to_delete_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
@@ -142,6 +142,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
             self.compute_filling_values(X)
             self.get_unique_value_cols(X)
+            
+        return self
 
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.delete_empty_columns(X)
@@ -160,10 +162,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             'to_fill_cols': self.to_fill_cols,
             'to_fill_values': self.to_fill_values,
             'unique_value_cols': self.unique_value_cols,
-            'list_cols': self.list_cols,
-            'cat_cols': self.cat_cols,
-            'date_cols': self.date_cols,
-            'corr_list_cols': self.corr_list_cols,
         }
         
         with open(path, 'w') as f:
@@ -197,15 +195,14 @@ if __name__ == '__main__':
     data_path = cst.file_data_train
     df = pd.read_csv(data_path)
     df = dpp.preprocess(df)
-    dpp.fit(df)
-    df = dpp.transform(df)
-
-    # path = os.path.join(cst.path_models, 'test.json')
-    # dpp.save_dict(path)
+    df = dpp.fit_transform(df)
     
-    # dpp = CYEDataPreProcessor.load(path)
+
+    path = os.path.join(cst.path_models, 'test.json')
+    dpp.save_dict(path)
+    
+    dpp = CYEDataPreProcessor.load(path)
     df = pd.read_csv(data_path)
-    df['District']
     df = dpp.preprocess(df)
     df = dpp.transform(df)
     
