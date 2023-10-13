@@ -1,3 +1,7 @@
+from typing import Any, cast
+from typing_extensions import Self
+import json
+
 import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -9,6 +13,7 @@ sys.path.append(os.curdir)
 
 from src.features.config import CYEConfigPreProcessor
 
+
 class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     LIST_COLS = ['LandPreparationMethod', 'NursDetFactor', 'TransDetFactor', 'OrgFertilizers',
                  'CropbasalFerts', 'FirstTopDressFert']
@@ -17,7 +22,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
                 'TransplantingIrrigationPowerSource', 'PCropSolidOrgFertAppMethod', 'MineralFertAppMethod',
                 'MineralFertAppMethod.1', 'Harv_method', 'Threshing_method', 'Stubble_use']
 
-    # num_cols = ['CultLand', 'CropCultLand', 'CropTillageDepth', 'SeedlingsPerPit',
+    # NUM_COLS = ['CultLand', 'CropCultLand', 'CropTillageDepth', 'SeedlingsPerPit',
     #             'TransplantingIrrigationHours', 'TransIrriCost', 'StandingWater', 'Ganaura', 'CropOrgFYM',
     #             'NoFertilizerAppln', 'BasalDAP', 'BasalUrea', '1tdUrea', '1appDaysUrea', '2tdUrea',
     #             '2appDaysUrea', 'Harv_hand_rent', 'Residue_length', 'Residue_perc', 'Acre', 'Yield']
@@ -147,6 +152,36 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             X = self.fill_numerical_columns(X)
 
         return X
+    
+    
+    def save_dict(self, path: str) -> bool:
+        dict_to_save = {
+            'config': self.config.__dict__,
+            'to_delete_cols': self.to_delete_cols,
+            'to_fill_cols': self.to_fill_cols,
+            'to_fill_values': self.to_fill_values,
+            'unique_value_cols': self.unique_value_cols,
+        }
+        
+        with open(path, 'w') as f:
+            json.dump(dict_to_save, f)
+            
+        return os.path.exists(path)
+    
+    @classmethod
+    def load(cls, path, **kwargs: Any) -> Self:
+        with open(path, 'r') as f:
+            dict_params: dict = json.load(f)
+            
+        dict_params.update(kwargs)
+        config_preprocessor = CYEConfigPreProcessor(**dict_params['config'])
+        self = cls(config_preprocessor)
+        
+        for key, value in dict_params.items():
+            if not key == 'config':
+                self.__setattr__(key, value)
+        
+        return self
 
 
 if __name__ == '__main__':
@@ -156,12 +191,18 @@ if __name__ == '__main__':
     
     config = CYEConfigPreProcessor()
     dpp = CYEDataPreProcessor(config=config)
-
     data_path = cst.file_data_train
     df = pd.read_csv(data_path)
-
     df = dpp.preprocess(df)
-    dpp.fit(df)
+    df_transformed = dpp.fit(df)
     df = dpp.transform(df)
 
+    # path = os.path.join(cst.path_models, 'test.json')
+    # dpp.save_dict(path)
+    
+    # dpp = CYEDataPreProcessor.load(path)
+    df = pd.read_csv(data_path)
+    df = dpp.preprocess(df)
+    df = dpp.transform(df)
+    
     print()

@@ -12,4 +12,4 @@ class CYEConfigPreProcessor:
         
         self.fillna=fillna
         self.missing_thr=missing_thr
-        self.fill_mode=fill_mode 
+        self.fill_mode=fill_mode
