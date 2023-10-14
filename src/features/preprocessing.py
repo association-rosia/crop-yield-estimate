@@ -92,7 +92,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
     def fill_numerical_columns(self, X: DataFrame) -> DataFrame:
         for col in self.to_fill_cols:
-            X[col] = X[col].fillna(self.to_fill_values[col])
+            # All columns are not in Test dataset
+            if col in X.columns:
+                X[col] = X[col].fillna(self.to_fill_values[col])
 
         return X
 
