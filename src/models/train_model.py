@@ -5,7 +5,6 @@ from argparse import Namespace
 
 sys.path.append(os.curdir)
 
-import joblib
 import pandas as pd
 import wandb
 
@@ -21,19 +20,38 @@ from src.constants import get_constants
 cst = get_constants()
 
 def main():
+    # Configure & Start run
     args_config = parse_args()
     run = init_wandb(args_config)
+    
+    # Prepare model directory
     name_run = f'{run.name}-{run.id}'
-    path_model = os.makedirs(os.path.join(cst.path_models, name_run))
+    path_model = os.path.join(cst.path_models, name_run)
+    os.makedirs(path_model)
+    
+    # Init pre-processing pipeline 
     preprocessor = init_preprocessor(run.config)
     
+    # Pre-process data
     raw_data = pd.read_csv(cst.file_data_train)
     input_data = preprocessor.preprocess(raw_data)
     input_data = preprocessor.fit_transform(input_data)
-    save_preprocessor(preprocessor, path_model)
     
-    XGBRegressor()
+    # Save pre-processing pipeline
+    file_preprocessor = os.path.join(path_model, 'preprocessor.json')
+    preprocessor.save_dict(file_preprocessor)
     
+    # Init model
+    xgbr = XGBRegressor()
+    
+    # Train model
+    xgbr.fit(input_data.drop(columns='Yield'), input_data['Yield'])
+    
+    # Save model
+    file_model = os.path.join(path_model, 'model.json')
+    xgbr.save_model(file_model)
+    
+    # Finish run
     run.finish()
     
 
@@ -41,13 +59,6 @@ def init_preprocessor(run_config: wandb_config.Config | dict) -> CYEDataPreProce
     config_preprocessor = CYEConfigPreProcessor(**run_config)
     
     return CYEDataPreProcessor(config_preprocessor)
-
-
-def save_preprocessor(preprocessor: CYEDataPreProcessor, path: str) -> bool:
-    file_preprocessor = os.path.join(path, 'preprocessor.save')
-    joblib.dump(value=preprocessor, filename=file_preprocessor)
-
-    return os.path.exists(file_preprocessor)
 
 
 def init_wandb(args_config: Namespace | dict) -> wandb_run.Run:
