@@ -196,12 +196,18 @@ if __name__ == '__main__':
     df = pd.read_csv(data_path)
     df = dpp.preprocess(df)
     df = dpp.fit_transform(df)
-    
 
     path = os.path.join(cst.path_models, 'test.json')
     dpp.save_dict(path)
     
+    # Train data
     dpp = CYEDataPreProcessor.load(path)
+    df = pd.read_csv(data_path)
+    df = dpp.preprocess(df)
+    df = dpp.transform(df)
+    
+    # Test data
+    data_path = cst.file_data_test
     df = pd.read_csv(data_path)
     df = dpp.preprocess(df)
     df = dpp.transform(df)
