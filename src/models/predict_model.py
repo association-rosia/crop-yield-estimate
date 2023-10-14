@@ -28,14 +28,16 @@ def main():
     preds = model.predict(input_data)
 
     # Create submisiion file to be uploaded to Zindi for scoring
-    submission = pd.DataFrame({'ID': input_data['ID'], 'Yield': preds})
+    submission = pd.DataFrame({'ID': input_data.index, 'Yield': preds})
     file_submission = os.path.join(cst.path_submissions, f'{args.name}.csv')
     submission.to_csv(file_submission, index=False)
     
 def load_model(name_run: str) -> XGBRegressor:
     file_model = os.path.join(cst.path_models, name_run, 'model.json')
+    xgbr = XGBRegressor()
+    xgbr.load_model(fname=file_model)
     
-    return XGBRegressor().load_model(fname=file_model)
+    return xgbr 
 
  
 def load_preprocessor(name_run: str) -> CYEDataPreProcessor:
