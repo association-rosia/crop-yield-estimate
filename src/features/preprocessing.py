@@ -45,7 +45,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.to_fill_values = {}
         self.unique_value_cols = []
         self.out_columns = []
-        self.target_column = 'Yield'
 
     def one_hot_list(self, X: DataFrame) -> DataFrame:
         for col in self.LIST_COLS:
@@ -112,7 +111,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             self.to_fill_values[col] = value
 
     def preprocess(self, X: DataFrame) -> DataFrame:
-        X.set_index('ID', inplace=True)
+        X = X.set_index('ID')
         X = self.one_hot_list(X)
         X = self.fill_correlated_list(X)
         X = self.cyclical_date_encoding(X)
@@ -140,7 +139,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         Permet de céer les colonnes non créées pendant le One Hot Encoding et les initialises à 0.
         Permet de supprimer les colonnes créées pendant le One Hot Encoding qui n'existaient pas pendant le fit.
         """
-        missing_columns = [col for col in self.out_columns if (col not in X.columns) and (not col == self.target_column)]
+        missing_columns = [col for col in self.out_columns if (col not in X.columns) and (not col == self.config['target_name'])]
         extra_columns = [col for col in X.columns if col not in self.out_columns]
         
         for col in missing_columns:
@@ -150,6 +149,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         
 
     def fit(self, X: DataFrame) -> Self:
+        X = self.preprocess(X)
         nan_columns = X.isnull().sum() / len(X) * 100
         nan_columns_to_delete = nan_columns > self.config['missing_thr']
         self.to_delete_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
@@ -166,6 +166,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: DataFrame) -> DataFrame:
+        X = self.preprocess(X)
         X = self.delete_empty_columns(X)
         X = self.delete_unique_value_cols(X)
 
