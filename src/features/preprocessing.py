@@ -38,12 +38,13 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         config: CYEConfigPreProcessor,
     ) -> None:
 
-        self.config = config
+        self.config = config.__dict__
 
         self.to_delete_cols = []
         self.to_fill_cols = []
         self.to_fill_values = {}
         self.unique_value_cols = []
+        self.out_columns = []
 
     def one_hot_list(self, X: DataFrame) -> DataFrame:
         for col in self.LIST_COLS:
@@ -100,9 +101,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
     def compute_filling_values(self, X: DataFrame):
         for col in self.to_fill_cols:
-            if self.config.fill_mode == 'mean':
+            if self.config['fill_mode'] == 'mean':
                 value = X[col].mean()
-            elif self.config.fill_mode == 'median':
+            elif self.config['fill_mode'] == 'median':
                 value = X[col].median()
             else:
                 raise NotImplementedError('Unknown filling mode')
@@ -115,7 +116,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X = self.fill_correlated_list(X)
         X = self.cyclical_date_encoding(X)
 
-        if self.config.fillna:
+        if self.config['fillna']:
             X = self.one_hot_encoding(X)
 
         return X
@@ -132,38 +133,55 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             X.drop(columns=col, inplace=True)
 
         return X
+    
+    def make_consistent(self, X: DataFrame) -> DataFrame:
+        """
+        Permet de céer les colonnes non créées pendant le One Hot Encoding et les initialises à 0.
+        Permet de supprimer les colonnes créées pendant le One Hot Encoding qui n'existaient pas pendant le fit.
+        """
+        missing_columns = [col for col in self.out_columns if col not in X.columns]
+        extra_columns = [col for col in X.columns if col not in self.out_columns]
+        
+        for col in missing_columns:
+            X[col] = 0
+        
+        return X.drop(columns=extra_columns)
+        
 
     def fit(self, X: DataFrame) -> Self:
         nan_columns = X.isnull().sum() / len(X) * 100
-        nan_columns_to_delete = nan_columns > self.config.missing_thr
+        nan_columns_to_delete = nan_columns > self.config['missing_thr']
         self.to_delete_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
-        if self.config.fillna:
-            nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config.missing_thr)
+        if self.config['fillna']:
+            nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config['missing_thr'])
             self.to_fill_cols = nan_columns_to_fill[nan_columns_to_fill].index.tolist()
 
             self.compute_filling_values(X)
             self.get_unique_value_cols(X)
-            
+        
+        self.out_columns = X.columns
+        
         return self
 
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.delete_empty_columns(X)
         X = self.delete_unique_value_cols(X)
 
-        if self.config.fillna:
+        if self.config['fillna']:
             X = self.fill_numerical_columns(X)
 
-        return X
+        return self.make_consistent(X)
     
     
     def save_dict(self, path: str) -> bool:
         dict_to_save = {
-            'config': self.config.__dict__,
+            'config': self.config,
             'to_delete_cols': self.to_delete_cols,
             'to_fill_cols': self.to_fill_cols,
             'to_fill_values': self.to_fill_values,
             'unique_value_cols': self.unique_value_cols,
+            'out_columns': self.out_columns,
         }
         
         with open(path, 'w') as f:
