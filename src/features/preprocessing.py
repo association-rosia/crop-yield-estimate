@@ -45,6 +45,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.to_fill_values = {}
         self.unique_value_cols = []
         self.out_columns = []
+        self.target_column = 'Yield'
 
     def one_hot_list(self, X: DataFrame) -> DataFrame:
         for col in self.LIST_COLS:
@@ -139,7 +140,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         Permet de céer les colonnes non créées pendant le One Hot Encoding et les initialises à 0.
         Permet de supprimer les colonnes créées pendant le One Hot Encoding qui n'existaient pas pendant le fit.
         """
-        missing_columns = [col for col in self.out_columns if col not in X.columns]
+        missing_columns = [col for col in self.out_columns if (col not in X.columns) and (not col == self.target_column)]
         extra_columns = [col for col in X.columns if col not in self.out_columns]
         
         for col in missing_columns:
@@ -160,7 +161,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             self.compute_filling_values(X)
             self.get_unique_value_cols(X)
         
-        self.out_columns = X.columns
+        self.out_columns = X.columns.tolist()
         
         return self
 

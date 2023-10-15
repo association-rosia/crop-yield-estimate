@@ -25,6 +25,10 @@ def main():
     input_data = preprocessor.preprocess(raw_data)
     input_data = preprocessor.transform(input_data)
     
+    # Reorder features
+    input_data = input_data[model.feature_names_in_]
+    
+    # Predict target value
     preds = model.predict(input_data)
 
     # Create submisiion file to be uploaded to Zindi for scoring
