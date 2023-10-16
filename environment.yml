@@ -8,5 +8,7 @@ dependencies:
       - wandb
       - pandas
       - numpy
+      - GPUtil
+      - xgboost
       - plotly
       - matplotlib

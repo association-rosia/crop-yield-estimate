@@ -1,3 +1,17 @@
+# Trash
 .DS_Store
 */.ipynb_checkpoints
-data/*
+__pycache__
+
+# IDE
+.idea
+.vscode
+
+# Directory
+data/**
+submissions/**
+models/**
+
+# Log
+wandb
+lightning_logs
