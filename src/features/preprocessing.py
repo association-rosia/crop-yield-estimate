@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import StandardScaler
 from typing_extensions import Self
 
 sys.path.append(os.curdir)
@@ -51,6 +52,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.unique_value_cols = []
         self.out_columns = []
         self.target_column = 'Yield'
+        self.scaler = StandardScaler()
 
     def one_hot_list(self, X: DataFrame) -> DataFrame:
         for col in self.LIST_COLS:
@@ -145,8 +147,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         Allows creating the columns that were not created during One Hot Encoding and initializes them to 0.
         Allows deleting the columns created during One Hot Encoding that did not exist during the fit.
         """
-        missing_columns = [col for col in self.out_columns if
-                           (col not in X.columns) and (not col == self.target_column)]
+        missing_columns = [col for col in self.out_columns if (col not in X.columns) and (not col == self.target_column)]
         extra_columns = [col for col in X.columns if col not in self.out_columns]
 
         for col in missing_columns:
@@ -166,11 +167,17 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             self.compute_filling_values(X)
             self.get_unique_value_cols(X)
 
+        if self.config['normalisation']:
+            self.scaler.fit(X)
+
         self.out_columns = X.columns.tolist()
 
         return self
 
     def transform(self, X: DataFrame) -> DataFrame:
+        if self.config['normalisation']:
+            X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
+
         X = self.delete_empty_columns(X)
         X = self.delete_unique_value_cols(X)
 
