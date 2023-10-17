@@ -12,3 +12,4 @@ dependencies:
       - xgboost
       - plotly
       - matplotlib
+      - pytorch-tabnet

@@ -1,16 +1,19 @@
-from typing import Any
-from typing_extensions import Self
 import json
-
-import pandas as pd
-from pandas import DataFrame
-import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
-
 import os
 import sys
+from typing import Any
+
+import numpy as np
+import pandas as pd
+from pandas import DataFrame
+from sklearn.base import BaseEstimator, TransformerMixin
+from typing_extensions import Self
 
 sys.path.append(os.curdir)
+
+from src.constants import get_constants
+
+cst = get_constants()
 
 from src.features.config import CYEConfigPreProcessor
 
@@ -25,22 +28,24 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     #             '2appDaysUrea', 'Harv_hand_rent', 'Residue_length', 'Residue_perc', 'Acre', 'Yield']
 
     DATE_COLS = ['CropTillageDate', 'RcNursEstDate', 'SeedingSowingTransplanting', 'Harv_date', 'Threshing_date']
-    
+
     CAT_COLS = ['District', 'Block', 'CropEstMethod', 'TransplantingIrrigationSource',
                 'TransplantingIrrigationPowerSource', 'PCropSolidOrgFertAppMethod', 'MineralFertAppMethod',
-                'MineralFertAppMethod.1', 'Harv_method', 'Threshing_method', 'Stubble_use'] + [f'{col}Year' for col in DATE_COLS]
+                'MineralFertAppMethod.1', 'Harv_method', 'Threshing_method', 'Stubble_use'] + [f'{col}Year' for col in
+                                                                                               DATE_COLS]
 
     CORR_LIST_COLS = [('CropOrgFYM', 'OrgFertilizersFYM'), ('Ganaura', 'OrgFertilizersGanaura'),
-                    ('BasalDAP', 'CropbasalFertsDAP'), ('BasalUrea', 'CropbasalFertsUrea'),
-                    ('1tdUrea', 'FirstTopDressFertUrea')]
+                      ('BasalDAP', 'CropbasalFertsDAP'), ('BasalUrea', 'CropbasalFertsUrea'),
+                      ('1tdUrea', 'FirstTopDressFertUrea')]
+
     def __init__(
-        self,
-        config: CYEConfigPreProcessor,
+            self,
+            config: CYEConfigPreProcessor,
     ) -> None:
 
         self.config = config.__dict__
 
-        self.to_delete_cols = []
+        self.to_del_cols = []
         self.to_fill_cols = []
         self.to_fill_values = {}
         self.unique_value_cols = []
@@ -88,7 +93,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def delete_empty_columns(self, X: DataFrame) -> DataFrame:
-        X.drop(columns=self.to_delete_cols, inplace=True)
+        X.drop(columns=self.to_del_cols, inplace=True)
 
         return X
 
@@ -134,35 +139,35 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             X.drop(columns=col, inplace=True)
 
         return X
-    
+
     def make_consistent(self, X: DataFrame) -> DataFrame:
         """
-        Permet de céer les colonnes non créées pendant le One Hot Encoding et les initialises à 0.
-        Permet de supprimer les colonnes créées pendant le One Hot Encoding qui n'existaient pas pendant le fit.
+        Allows creating the columns that were not created during One Hot Encoding and initializes them to 0.
+        Allows deleting the columns created during One Hot Encoding that did not exist during the fit.
         """
-        missing_columns = [col for col in self.out_columns if (col not in X.columns) and (not col == self.target_column)]
+        missing_columns = [col for col in self.out_columns if
+                           (col not in X.columns) and (not col == self.target_column)]
         extra_columns = [col for col in X.columns if col not in self.out_columns]
-        
+
         for col in missing_columns:
             X[col] = 0
-        
+
         return X.drop(columns=extra_columns)
-        
 
     def fit(self, X: DataFrame) -> Self:
         nan_columns = X.isnull().sum() / len(X) * 100
-        nan_columns_to_delete = nan_columns > self.config['missing_thr']
-        self.to_delete_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
+        nan_columns_to_delete = nan_columns > self.config['delna_thr']
+        self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
         if self.config['fillna']:
-            nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config['missing_thr'])
+            nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config['delna_thr'])
             self.to_fill_cols = nan_columns_to_fill[nan_columns_to_fill].index.tolist()
 
             self.compute_filling_values(X)
             self.get_unique_value_cols(X)
-        
+
         self.out_columns = X.columns.tolist()
-        
+
         return self
 
     def transform(self, X: DataFrame) -> DataFrame:
@@ -173,64 +178,58 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             X = self.fill_numerical_columns(X)
 
         return self.make_consistent(X)
-    
-    
-    def save_dict(self, path: str) -> bool:
+
+    def save_dict(self, path_models: str) -> bool:
         dict_to_save = {
             'config': self.config,
-            'to_delete_cols': self.to_delete_cols,
+            'to_del_cols': self.to_del_cols,
             'to_fill_cols': self.to_fill_cols,
             'to_fill_values': self.to_fill_values,
             'unique_value_cols': self.unique_value_cols,
             'out_columns': self.out_columns,
         }
-        
-        with open(path, 'w') as f:
+
+        ddp_filename = f'dpp_{self.config["fillna"]}_{self.config["delna_thr"]}_{self.config["fill_mode"]}.json'
+        dpp_path = os.path.join(path_models, ddp_filename)
+        os.makedirs(os.path.dirname(dpp_path), exist_ok=True)
+
+        with open(dpp_path, 'w') as f:
             json.dump(dict_to_save, f)
-            
-        return os.path.exists(path)
-    
+
+        return dpp_path
+
     @classmethod
     def load(cls, path, **kwargs: Any) -> Self:
         with open(path, 'r') as f:
             dict_params: dict = json.load(f)
-            
+
         dict_params.update(kwargs)
         config_preprocessor = CYEConfigPreProcessor(**dict_params['config'])
         self = cls(config_preprocessor)
-        
+
         for key, value in dict_params.items():
             if not key == 'config':
                 self.__setattr__(key, value)
-        
+
         return self
 
 
 if __name__ == '__main__':
     from src.constants import get_constants
-    
+
     cst = get_constants()
-    
+
     config = CYEConfigPreProcessor()
     dpp = CYEDataPreProcessor(config=config)
-    data_path = cst.file_data_train
-    df = pd.read_csv(data_path)
-    df = dpp.preprocess(df)
-    df = dpp.fit_transform(df)
+    train_df = pd.read_csv(cst.file_data_train)
+    train_df = dpp.preprocess(train_df)
+    train_df = dpp.fit_transform(train_df)
+    dpp_path = dpp.save_dict(cst.path_models)
 
-    path = os.path.join(cst.path_models, 'test.json')
-    dpp.save_dict(path)
-    
-    # Train data
-    dpp = CYEDataPreProcessor.load(path)
-    df = pd.read_csv(data_path)
-    df = dpp.preprocess(df)
-    df = dpp.transform(df)
-    
     # Test data
-    data_path = cst.file_data_test
-    df = pd.read_csv(data_path)
-    df = dpp.preprocess(df)
-    df = dpp.transform(df)
-    
+    dpp = CYEDataPreProcessor.load(dpp_path)
+    test_df = pd.read_csv(cst.file_data_test)
+    test_df = dpp.preprocess(test_df)
+    test_df = dpp.transform(test_df)
+
     print()

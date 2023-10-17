@@ -1,5 +1,7 @@
 import os
+
 import GPUtil
+
 
 class CYEConstants:
     """
@@ -18,7 +20,7 @@ class CYEConstants:
 
         # Initialize the device for computation
         self.device = self.init_device()
-        
+
         # WandB constants
         self.project_name = 'crop-yield-estimate'
         self.entity = 'association-rosia'
