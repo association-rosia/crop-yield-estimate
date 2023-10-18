@@ -190,7 +190,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def save(self, path_models: str) -> bool:
+    def save(self, save_folder: str) -> bool:
         dict_to_save = {
             'config': self.config,
             'to_del_cols': self.to_del_cols,
@@ -200,15 +200,13 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             'out_columns': self.out_columns,
         }
 
-        dpp_folder = f'dpp_{self.config["fillna"]}_{self.config["delna_thr"]}_{self.config["fill_mode"]}'
-        dpp_path = os.path.join(path_models, dpp_folder)
-        os.makedirs(dpp_path, exist_ok=True)
+        os.makedirs(save_folder, exist_ok=True)
 
-        dpp_file_path = os.path.join(dpp_path, 'dpp.pkl')
+        dpp_file_path = os.path.join(save_folder, 'dpp.pkl')
         with open(dpp_file_path, 'w') as f:
             json.dump(dict_to_save, f)
 
-        scaler_file_path = os.path.join(dpp_path, 'scaler.pkl')
+        scaler_file_path = os.path.join(save_folder, 'scaler.pkl')
         joblib.dump(self.scaler, scaler_file_path)
 
         return dpp_file_path, scaler_file_path
@@ -243,7 +241,10 @@ if __name__ == '__main__':
 
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     X_train = dpp.fit_transform(X_train)
-    dpp_file_path, scaler_file_path = dpp.save(cst.path_models)
+
+    dpp_config_str = f'dpp_{config.fillna}_{config.delna_thr}_{config.fill_mode}'
+    save_folder = os.path.join(cst.path_models, dpp_config_str)
+    dpp_file_path, scaler_file_path = dpp.save(save_folder)
 
     # Test data
     dpp = CYEDataPreProcessor.load(dpp_file_path, scaler_file_path)
