@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import argparse
@@ -19,6 +20,7 @@ from src.models.model_config import get_gridsearch, get_parameters
 from src.constants import get_constants
 
 cst = get_constants()
+
 
 def main():
     # Configure & Start run
@@ -69,11 +71,11 @@ def train(run_config: dict | None):
     joblib.dump(gridsearch.best_estimator_, filename=file_model)
     # Finish run
     run.finish()
-    
+
 
 def init_preprocessor(run_config: dict) -> CYEDataPreProcessor:
     config_preprocessor = CYEConfigPreProcessor(**run_config)
-    
+
     return CYEDataPreProcessor(config_preprocessor)
 
 
@@ -83,7 +85,7 @@ def init_wandb(args_config: dict) -> wandb_run.Run:
         project=cst.project_name,
         config=args_config
     )
-    
+
     return run
 
 
@@ -94,11 +96,14 @@ def parse_args() -> dict:
     parser.add_argument('--seed', type=int, default=42, help='Pass an int for reproducible output across multiple function calls.')
     
     # Pre Processing 
-    parser.add_argument('--fillna', action='store_true', default=False, help='Fill or not missing values during preprocessing')
-    parser.add_argument('--missing_thr', type=int, default=50, help='Threshold in percentage (0 - 100). Delete columns that have more missing values than it')
-    parser.add_argument('--fill_mode', type=str, default='median', choices=['median', 'mean'], help='Methode used to fill missing values')
+    parser.add_argument('--fillna', action='store_true', default=False,
+                        help='Fill or not missing values during preprocessing')
+    parser.add_argument('--missing_thr', type=int, default=50,
+                        help='Threshold in percentage (0 - 100). Delete columns that have more missing values than it')
+    parser.add_argument('--fill_mode', type=str, default='median', choices=['median', 'mean'],
+                        help='Methode used to fill missing values')
     parser.add_argument('--target_name', type=str, default='Yield', choices=['Yield'], help='Columns to use as target value')
-    
+
     # Kfold
     parser.add_argument('--n_splits', type=int, default=5, help='Number of folds. Must be at least 2.')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost'], help='Estimator to use.')
