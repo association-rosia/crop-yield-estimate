@@ -13,7 +13,8 @@ from scipy import stats
 
 def get_estimator(estimator_name, seed) -> BaseEstimator:
     if estimator_name == 'XGBRegressor':
-        estimator = XGBRegressor(random_state=seed)
+        estimator = XGBRegressor(random_state=seed) 
+        #, tree_method='hist', device='cuda', sampling_method=gradient_based
     else:
         raise NotImplementedError(f'Estimator {estimator_name} are not implemented.')
     
@@ -22,11 +23,13 @@ def get_estimator(estimator_name, seed) -> BaseEstimator:
 def get_parameters(estimator_name) -> dict:
     if estimator_name == 'XGBRegressor':
         parameters = {
-            'learning_rate': [0.01, 0.1],
+            'learning_rate': [0.01, 0.1, 0.3, 0.5],
             'max_depth': [3, 5, 7, 10],
             'min_child_weight': [1, 3, 5],
-            'subsample': [0.5, 0.7],
-            'colsample_bytree': [0.5, 0.7],
+            'subsample': [0.5, 0.7, 1],
+            'colsample_bytree': [0.5, 0.7, 1],
+            'colsample_bylevel': [0.5, 0.7, 1],
+            'colsample_bynode': [0.5, 0.7, 1],
             'n_estimators': [100, 200, 500],
         }
     else:
