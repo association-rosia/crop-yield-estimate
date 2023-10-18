@@ -29,6 +29,7 @@ def main():
             entity=cst.entity,
             project=cst.project_name,
         )
+        
         wandb.agent(
             sweep_id=sweep_id,
             function=train,
