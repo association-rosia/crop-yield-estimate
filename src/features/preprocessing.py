@@ -9,6 +9,7 @@ from pandas import DataFrame
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 from typing_extensions import Self
+import joblib
 
 sys.path.append(os.curdir)
 
@@ -51,7 +52,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.to_fill_values = {}
         self.unique_value_cols = []
         self.out_columns = []
-        self.target_column = 'Yield'
         self.scaler = StandardScaler()
 
     def one_hot_list(self, X: DataFrame) -> DataFrame:
@@ -147,13 +147,16 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         Allows creating the columns that were not created during One Hot Encoding and initializes them to 0.
         Allows deleting the columns created during One Hot Encoding that did not exist during the fit.
         """
-        missing_columns = [col for col in self.out_columns if (col not in X.columns) and (not col == self.target_column)]
+        missing_columns = [col for col in self.out_columns if col not in X.columns]
         extra_columns = [col for col in X.columns if col not in self.out_columns]
 
         for col in missing_columns:
             X[col] = 0
 
-        return X.drop(columns=extra_columns)
+        X.drop(columns=extra_columns, inplace=True)
+        X = X[self.out_columns]
+
+        return X
 
     def fit(self, X: DataFrame) -> Self:
         nan_columns = X.isnull().sum() / len(X) * 100
@@ -175,18 +178,19 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: DataFrame) -> DataFrame:
-        if self.config['normalisation']:
-            X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
-
-        X = self.delete_empty_columns(X)
-        X = self.delete_unique_value_cols(X)
-
         if self.config['fillna']:
             X = self.fill_numerical_columns(X)
 
-        return self.make_consistent(X)
+        X = self.delete_unique_value_cols(X)
+        X = self.delete_empty_columns(X)
+        X = self.make_consistent(X)
 
-    def save_dict(self, path_models: str) -> bool:
+        if self.config['normalisation']:
+            X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
+
+        return X
+
+    def save(self, path_models: str) -> bool:
         dict_to_save = {
             'config': self.config,
             'to_del_cols': self.to_del_cols,
@@ -196,23 +200,29 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             'out_columns': self.out_columns,
         }
 
-        ddp_filename = f'dpp_{self.config["fillna"]}_{self.config["delna_thr"]}_{self.config["fill_mode"]}.json'
-        dpp_path = os.path.join(path_models, ddp_filename)
-        os.makedirs(os.path.dirname(dpp_path), exist_ok=True)
+        dpp_folder = f'dpp_{self.config["fillna"]}_{self.config["delna_thr"]}_{self.config["fill_mode"]}'
+        dpp_path = os.path.join(path_models, dpp_folder)
+        os.makedirs(dpp_path, exist_ok=True)
 
-        with open(dpp_path, 'w') as f:
+        dpp_file_path = os.path.join(dpp_path, 'dpp.pkl')
+        with open(dpp_file_path, 'w') as f:
             json.dump(dict_to_save, f)
 
-        return dpp_path
+        scaler_file_path = os.path.join(dpp_path, 'scaler.pkl')
+        joblib.dump(self.scaler, scaler_file_path)
+
+        return dpp_file_path, scaler_file_path
 
     @classmethod
-    def load(cls, path, **kwargs: Any) -> Self:
-        with open(path, 'r') as f:
+    def load(cls, dpp_file_path, scaler_file_path, **kwargs: Any) -> Self:
+        with open(dpp_file_path, 'r') as f:
             dict_params: dict = json.load(f)
 
         dict_params.update(kwargs)
         config_preprocessor = CYEConfigPreProcessor(**dict_params['config'])
         self = cls(config_preprocessor)
+
+        self.scaler = joblib.load(scaler_file_path)
 
         for key, value in dict_params.items():
             if not key == 'config':
@@ -228,15 +238,17 @@ if __name__ == '__main__':
 
     config = CYEConfigPreProcessor()
     dpp = CYEDataPreProcessor(config=config)
-    train_df = pd.read_csv(cst.file_data_train)
-    train_df = dpp.preprocess(train_df)
-    train_df = dpp.fit_transform(train_df)
-    dpp_path = dpp.save_dict(cst.path_models)
+    df_train = pd.read_csv(cst.file_data_train)
+    df_train = dpp.preprocess(df_train)
+
+    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+    X_train = dpp.fit_transform(X_train)
+    dpp_file_path, scaler_file_path = dpp.save(cst.path_models)
 
     # Test data
-    dpp = CYEDataPreProcessor.load(dpp_path)
-    test_df = pd.read_csv(cst.file_data_test)
-    test_df = dpp.preprocess(test_df)
-    test_df = dpp.transform(test_df)
+    dpp = CYEDataPreProcessor.load(dpp_file_path, scaler_file_path)
+    X_test = pd.read_csv(cst.file_data_test)
+    X_test = dpp.preprocess(X_test)
+    X_test = dpp.transform(X_test)
 
     print()

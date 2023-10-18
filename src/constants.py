@@ -25,6 +25,8 @@ class CYEConstants:
         self.project_name = 'crop-yield-estimate'
         self.entity = 'association-rosia'
 
+        self.target_column = 'Yield'
+
     @staticmethod
     def init_device():
         """
