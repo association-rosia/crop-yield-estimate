@@ -17,6 +17,7 @@ class CYEConstants:
         # Paths for models and submissions
         self.path_models = 'models'
         self.path_submissions = 'submissions'
+        self.path_configs = 'configs'
 
         # Initialize the device for computation
         self.device = self.init_device()

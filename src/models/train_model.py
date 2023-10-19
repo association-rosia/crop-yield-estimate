@@ -2,20 +2,20 @@ import argparse
 import os
 import sys
 import argparse
-import joblib
+from multiprocessing import Process
+import yaml
 
 sys.path.append(os.curdir)
 
 import pandas as pd
+import numpy as np
 
 import wandb
-from wandb.sdk import wandb_run
-from wandb import Swe
 
-from src.features.preprocessing import CYEDataPreProcessor
-from src.features.config import CYEConfigPreProcessor
+from src.models.utils import init_preprocessor, init_estimator
 
-from src.models.model_config import get_gridsearch, get_parameters
+from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn.model_selection import cross_val_score
 
 from src.constants import get_constants
 
@@ -25,92 +25,99 @@ cst = get_constants()
 def main():
     # Configure & Start run
     run_config = parse_args()
-    if run_config['sweep']:
-        sweep_id = wandb.sweep(
-            sweep=f'{run_config["estimator_name"]}.yml',
-            entity=cst.entity,
-            project=cst.project_name,
-        )
-        
+    
+    # Load sweep config
+    path_sweep = os.path.join(cst.path_configs, f'{run_config["estimator_name"].lower()}.yml')
+    with open(path_sweep, 'r') as file:
+        sweep = yaml.safe_load(file)
+    
+    # Create sweep
+    sweep_id = wandb.sweep(
+        sweep=sweep,
+        entity=cst.entity,
+        project=cst.project_name,
+    )
+    
+    # Launch sweep
+    if run_config['dry']:
         wandb.agent(
             sweep_id=sweep_id,
             function=train,
             entity=cst.entity,
             project=cst.project_name,
-        )
+            count=5,
+        ) 
     else:
-        train(run_config)
+        launch_sweep(nb_agents=run_config['nb_agents'], sweep_id=sweep_id)
 
-def train(run_config: dict | None):
-    run = init_wandb(run_config)
+
+def launch_sweep(nb_agents: int, sweep_id: str):
+    list_agent = []
+    for _ in range(nb_agents):
+        agent = Process(
+            target=wandb.agent,
+            kwargs={
+                'sweep_id': sweep_id,
+                'function': train,
+                'entity': cst.entity,
+                'project': cst.project_name,
+            }
+        )
+        list_agent.append(agent)
+        agent.start()
+
+    # complete the processes
+    for agent in list_agent:
+        agent.join()
+    
+
+def train():
+    # Init wandb run
+    run = wandb.init()
+    # Get run config as dict
     run_config = run.config.as_dict()
     
-    # Prepare model directory
-    name_run = f'{run.name}-{run.id}'
-    path_model = os.path.join(cst.path_models, name_run)
-    os.makedirs(path_model)
-    
-    # Init pre-processing pipeline
+    # Init pre-processor
     preprocessor = init_preprocessor(run_config)
-    raw_data = pd.read_csv(cst.file_data_train)
-    # Pre-process data
-    input_data = preprocessor.fit_transform(raw_data)
-    # Save pre-processing pipeline
-    file_preprocessor = os.path.join(path_model, 'preprocessor.json')
-    preprocessor.save_dict(file_preprocessor)
     
-    # Init GridSearch
-    # gridsearch = get_gridsearch(run_config=run_config, target=input_data[run_config['target_name']])
+    # Init estimator
+    estimator = init_estimator(run_config)
     
-    # Begin GridSearch & Save score
-    gridsearch.fit(input_data.drop(columns='Yield').to_numpy(), input_data['Yield'].to_numpy())
-    run.log({'loss': gridsearch.best_score_})
+    # Pre-rpocess data
+    df_train = pd.read_csv(cst.file_data_train)
+    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+    X_train = preprocessor.fit_transform(X_train)
     
-    # Save model
-    file_model = os.path.join(path_model, 'model.save')
-    joblib.dump(gridsearch.best_estimator_, filename=file_model)
+    # Create scorer from rmse function
+    scorer = make_scorer(mean_squared_error, squared=False)
+    # Cross-validate estimator
+    folds_score = cross_val_score(
+        estimator=estimator,
+        X=X_train.to_numpy(),
+        y=y_train.to_numpy(),
+        scoring=scorer,
+        cv=run_config['cv'],
+        n_jobs=-1,
+    )
+    
+    # Log results
+    run.log({
+        'rmse/avg': np.mean(folds_score),
+        'rmse/med': np.median(folds_score),
+        'rmse/min': np.min(folds_score),
+        'rmse/max': np.max(folds_score),
+    })
+    
     # Finish run
     run.finish()
-
-
-def init_preprocessor(run_config: dict) -> CYEDataPreProcessor:
-    config_preprocessor = CYEConfigPreProcessor(**run_config)
-
-    return CYEDataPreProcessor(config_preprocessor)
-
-
-def init_wandb(args_config: dict) -> wandb_run.Run:
-    run = wandb.init(
-        entity=cst.entity,
-        project=cst.project_name,
-        config=args_config
-    )
-
-    return run
 
 
 def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project_name} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-    parser.add_argument('--seed', type=int, default=42, help='Pass an int for reproducible output across multiple function calls.')
-    
-    # Pre Processing 
-    parser.add_argument('--fillna', action='store_true', default=False,
-                        help='Fill or not missing values during preprocessing')
-    parser.add_argument('--missing_thr', type=int, default=50,
-                        help='Threshold in percentage (0 - 100). Delete columns that have more missing values than it')
-    parser.add_argument('--fill_mode', type=str, default='median', choices=['median', 'mean'],
-                        help='Methode used to fill missing values')
-    parser.add_argument('--target_name', type=str, default='Yield', choices=['Yield'], help='Columns to use as target value')
-
-    # Kfold
-    parser.add_argument('--n_splits', type=int, default=5, help='Number of folds. Must be at least 2.')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost'], help='Estimator to use.')
-    
-    # Sweep
-    parser.add_argument('--sweep', action='store_true', default=False, help="Use or not a sweep")
-    
+    parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
     return parser.parse_args().__dict__
 
 

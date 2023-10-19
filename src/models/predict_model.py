@@ -18,16 +18,6 @@ cst = get_constants()
 
 def main():
     args = parse_args()
-    preprocessor = load_preprocessor(args.name)
-    model = load_model(args.name)
-
-    # Pre-process data
-    raw_data = pd.read_csv(cst.file_data_test)
-    input_data = preprocessor.preprocess(raw_data)
-    input_data = preprocessor.transform(input_data)
-
-    # Reorder features
-    input_data = input_data[model.feature_names_in_]
 
     # Predict target value
     preds = model.predict(input_data)
@@ -46,20 +36,14 @@ def load_model(name_run: str) -> XGBRegressor:
     return xgbr
 
 
-def load_preprocessor(name_run: str) -> CYEDataPreProcessor:
-    file_preprocessor = os.path.join(cst.path_models, name_run, 'preprocessor.json')
-
-    return CYEDataPreProcessor.load(file_preprocessor)
-
-
-def parse_args() -> Namespace:
+def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Make {cst.project_name} submission')
 
     # Run name
     parser.add_argument('-n', '--name', type=str, help='Name of run to use for submission')
 
-    return parser.parse_args()
+    return parser.parse_args().__dict__
 
 
 if __name__ == '__main__':
