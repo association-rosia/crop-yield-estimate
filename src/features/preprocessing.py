@@ -162,7 +162,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         nan_columns_to_delete = nan_columns > self.config['delna_thr']
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
-        if not self.config['fill_mode'] == 'none':
+        if self.config['fill_mode'] != 'none':
             nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config['delna_thr'])
             self.to_fill_cols = nan_columns_to_fill[nan_columns_to_fill].index.tolist()
 
@@ -179,7 +179,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.preprocess(X)
         
-        if not self.config['fill_mode'] == 'none':
+        if self.config['fill_mode'] != 'none':
             X = self.fill_numerical_columns(X)
 
         X = self.make_consistent(X)
