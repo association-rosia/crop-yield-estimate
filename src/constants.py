@@ -23,7 +23,7 @@ class CYEConstants:
         self.device = self.init_device()
 
         # WandB constants
-        self.project_name = 'crop-yield-estimate'
+        self.project = 'crop-yield-estimate'
         self.entity = 'association-rosia'
 
         self.target_column = 'Yield'

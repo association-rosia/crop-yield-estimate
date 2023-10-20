@@ -35,7 +35,7 @@ def main():
     sweep_id = wandb.sweep(
         sweep=sweep,
         entity=cst.entity,
-        project=cst.project_name,
+        project=cst.project,
     )
     
     # Launch sweep
@@ -44,7 +44,7 @@ def main():
             sweep_id=sweep_id,
             function=train,
             entity=cst.entity,
-            project=cst.project_name,
+            project=cst.project,
             count=5,
         ) 
     else:
@@ -60,7 +60,7 @@ def launch_sweep(nb_agents: int, sweep_id: str):
                 'sweep_id': sweep_id,
                 'function': train,
                 'entity': cst.entity,
-                'project': cst.project_name,
+                'project': cst.project,
             }
         )
         list_agent.append(agent)
@@ -83,7 +83,7 @@ def train():
     # Init estimator
     estimator = init_estimator(run_config)
     
-    # Pre-rpocess data
+    # Pre-process data
     df_train = pd.read_csv(cst.file_data_train)
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     X_train = preprocessor.fit_transform(X_train)
@@ -114,7 +114,7 @@ def train():
 
 def parse_args() -> dict:
     # Define the parameters
-    parser = argparse.ArgumentParser(description=f'Train {cst.project_name} model')
+    parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost'], help='Estimator to use.')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
