@@ -1,19 +1,21 @@
 import argparse
 import os
 import sys
-from argparse import Namespace
+import argparse
+from multiprocessing import Process
+import yaml
 
 sys.path.append(os.curdir)
 
 import pandas as pd
+import numpy as np
+
 import wandb
 
-from wandb.sdk import wandb_config, wandb_run
+from src.models.utils import init_preprocessor, init_estimator
 
-from src.features.preprocessing import CYEDataPreProcessor
-from src.features.config import CYEConfigPreProcessor
-
-from xgboost.sklearn import XGBRegressor
+from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn.model_selection import cross_val_score
 
 from src.constants import get_constants
 
@@ -22,70 +24,101 @@ cst = get_constants()
 
 def main():
     # Configure & Start run
-    args_config = parse_args()
-    run = init_wandb(args_config)
+    run_config = parse_args()
+    
+    # Load sweep config
+    path_sweep = os.path.join(cst.path_configs, f'{run_config["estimator_name"].lower()}.yml')
+    with open(path_sweep, 'r') as file:
+        sweep = yaml.safe_load(file)
+    
+    # Create sweep
+    sweep_id = wandb.sweep(
+        sweep=sweep,
+        entity=cst.entity,
+        project=cst.project_name,
+    )
+    
+    # Launch sweep
+    if run_config['dry']:
+        wandb.agent(
+            sweep_id=sweep_id,
+            function=train,
+            entity=cst.entity,
+            project=cst.project_name,
+            count=5,
+        ) 
+    else:
+        launch_sweep(nb_agents=run_config['nb_agents'], sweep_id=sweep_id)
 
-    # Prepare model directory
-    name_run = f'{run.name}-{run.id}'
-    path_model = os.path.join(cst.path_models, name_run)
-    os.makedirs(path_model)
 
-    # Init pre-processing pipeline 
-    preprocessor = init_preprocessor(run.config)
+def launch_sweep(nb_agents: int, sweep_id: str):
+    list_agent = []
+    for _ in range(nb_agents):
+        agent = Process(
+            target=wandb.agent,
+            kwargs={
+                'sweep_id': sweep_id,
+                'function': train,
+                'entity': cst.entity,
+                'project': cst.project_name,
+            }
+        )
+        list_agent.append(agent)
+        agent.start()
 
-    # Pre-process data
-    raw_data = pd.read_csv(cst.file_data_train)
-    input_data = preprocessor.preprocess(raw_data)
-    input_data = preprocessor.fit_transform(input_data)
+    # complete the processes
+    for agent in list_agent:
+        agent.join()
+    
 
-    # Save pre-processing pipeline
-    file_preprocessor = os.path.join(path_model, 'preprocessor.json')
-    preprocessor.save_dict(file_preprocessor)
-
-    # Init model
-    xgbr = XGBRegressor()
-
-    # Train model
-    xgbr.fit(input_data.drop(columns='Yield'), input_data['Yield'])
-
-    # Save model
-    file_model = os.path.join(path_model, 'model.json')
-    xgbr.save_model(file_model)
-
+def train():
+    # Init wandb run
+    run = wandb.init()
+    # Get run config as dict
+    run_config = run.config.as_dict()
+    
+    # Init pre-processor
+    preprocessor = init_preprocessor(run_config)
+    
+    # Init estimator
+    estimator = init_estimator(run_config)
+    
+    # Pre-rpocess data
+    df_train = pd.read_csv(cst.file_data_train)
+    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+    X_train = preprocessor.fit_transform(X_train)
+    
+    # Create scorer from rmse function
+    scorer = make_scorer(mean_squared_error, squared=False)
+    # Cross-validate estimator
+    folds_score = cross_val_score(
+        estimator=estimator,
+        X=X_train.to_numpy(),
+        y=y_train.to_numpy(),
+        scoring=scorer,
+        cv=run_config['cv'],
+        n_jobs=-1,
+    )
+    
+    # Log results
+    run.log({
+        'rmse/avg': np.mean(folds_score),
+        'rmse/med': np.median(folds_score),
+        'rmse/min': np.min(folds_score),
+        'rmse/max': np.max(folds_score),
+    })
+    
     # Finish run
     run.finish()
 
 
-def init_preprocessor(run_config: wandb_config.Config | dict) -> CYEDataPreProcessor:
-    config_preprocessor = CYEConfigPreProcessor(**run_config)
-
-    return CYEDataPreProcessor(config_preprocessor)
-
-
-def init_wandb(args_config: Namespace | dict) -> wandb_run.Run:
-    run = wandb.init(
-        entity=cst.entity,
-        project=cst.project_name,
-        config=args_config
-    )
-
-    return run
-
-
-def parse_args() -> Namespace:
+def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project_name} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-
-    # Pre Processing 
-    parser.add_argument('--fillna', action='store_true', default=True,
-                        help='Fill or not missing values during preprocessing')
-    parser.add_argument('--missing_thr', type=int, default=50,
-                        help='Threshold in percentage (0 - 100). Delete columns that have more missing values than it')
-    parser.add_argument('--fill_mode', type=str, default='median', choices=['median', 'mean'],
-                        help='Methode used to fill missing values')
-
-    return parser.parse_args()
+    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost'], help='Estimator to use.')
+    parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
+    return parser.parse_args().__dict__
 
 
 if __name__ == '__main__':

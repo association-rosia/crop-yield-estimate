@@ -45,7 +45,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             config: CYEConfigPreProcessor,
     ) -> None:
 
-        self.config = config.__dict__
+        self.config = config.get_params()
 
         self.to_del_cols = []
         self.to_fill_cols = []
@@ -119,13 +119,11 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             self.to_fill_values[col] = value
 
     def preprocess(self, X: DataFrame) -> DataFrame:
-        X.set_index('ID', inplace=True)
+        X = X.set_index('ID')
         X = self.one_hot_list(X)
         X = self.fill_correlated_list(X)
         X = self.cyclical_date_encoding(X)
-
-        if self.config['fillna']:
-            X = self.one_hot_encoding(X)
+        X = self.one_hot_encoding(X)
 
         return X
 
@@ -137,8 +135,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
                 self.unique_value_cols.append(col)
 
     def delete_unique_value_cols(self, X: DataFrame) -> DataFrame:
-        for col in self.unique_value_cols:
-            X.drop(columns=col, inplace=True)
+        X.drop(columns=self.unique_value_cols, inplace=True)
 
         return X
 
@@ -159,11 +156,13 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def fit(self, X: DataFrame) -> Self:
+        X = self.preprocess(X)
+        
         nan_columns = X.isnull().sum() / len(X) * 100
         nan_columns_to_delete = nan_columns > self.config['delna_thr']
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
-        if self.config['fillna']:
+        if self.config['fill_mode'] != 'none':
             nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config['delna_thr'])
             self.to_fill_cols = nan_columns_to_fill[nan_columns_to_fill].index.tolist()
 
@@ -178,55 +177,25 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: DataFrame) -> DataFrame:
-        if self.config['fillna']:
+        X = self.preprocess(X)
+        
+        if self.config['fill_mode'] != 'none':
             X = self.fill_numerical_columns(X)
 
-        X = self.delete_unique_value_cols(X)
-        X = self.delete_empty_columns(X)
         X = self.make_consistent(X)
-
+        
         if self.config['normalisation']:
             X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
+            
+        X = self.delete_unique_value_cols(X)
+        X = self.delete_empty_columns(X)
+
 
         return X
-
-    def save(self, save_folder: str) -> bool:
-        dict_to_save = {
-            'config': self.config,
-            'to_del_cols': self.to_del_cols,
-            'to_fill_cols': self.to_fill_cols,
-            'to_fill_values': self.to_fill_values,
-            'unique_value_cols': self.unique_value_cols,
-            'out_columns': self.out_columns,
-        }
-
-        os.makedirs(save_folder, exist_ok=True)
-
-        dpp_file_path = os.path.join(save_folder, 'dpp.pkl')
-        with open(dpp_file_path, 'w') as f:
-            json.dump(dict_to_save, f)
-
-        scaler_file_path = os.path.join(save_folder, 'scaler.pkl')
-        joblib.dump(self.scaler, scaler_file_path)
-
-        return dpp_file_path, scaler_file_path
-
-    @classmethod
-    def load(cls, dpp_file_path, scaler_file_path, **kwargs: Any) -> Self:
-        with open(dpp_file_path, 'r') as f:
-            dict_params: dict = json.load(f)
-
-        dict_params.update(kwargs)
-        config_preprocessor = CYEConfigPreProcessor(**dict_params['config'])
-        self = cls(config_preprocessor)
-
-        self.scaler = joblib.load(scaler_file_path)
-
-        for key, value in dict_params.items():
-            if not key == 'config':
-                self.__setattr__(key, value)
-
-        return self
+    
+    def fit_transform(self, X: DataFrame, y=None, **fit_params) -> DataFrame:
+        
+        return self.fit(X, **fit_params).transform(X)
 
 
 if __name__ == '__main__':
@@ -234,22 +203,15 @@ if __name__ == '__main__':
 
     cst = get_constants()
 
-    config = CYEConfigPreProcessor()
+    config = CYEConfigPreProcessor(normalisation=True, fill_mode='none', delna_thr=0.27)
     dpp = CYEDataPreProcessor(config=config)
     df_train = pd.read_csv(cst.file_data_train)
-    df_train = dpp.preprocess(df_train)
 
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     X_train = dpp.fit_transform(X_train)
 
-    dpp_config_str = f'dpp_{config.fillna}_{config.delna_thr}_{config.fill_mode}'
-    save_folder = os.path.join(cst.path_models, dpp_config_str)
-    dpp_file_path, scaler_file_path = dpp.save(save_folder)
-
     # Test data
-    dpp = CYEDataPreProcessor.load(dpp_file_path, scaler_file_path)
     X_test = pd.read_csv(cst.file_data_test)
-    X_test = dpp.preprocess(X_test)
     X_test = dpp.transform(X_test)
 
     print()

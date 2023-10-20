@@ -1,0 +1,85 @@
+# General
+method: bayes
+
+metric:
+  name: rmse/avg
+  goal: minimize
+
+parameters:
+  random_state:
+    distribution: constant
+    value: 42
+
+  cv:
+    distribution: constant
+    value: 5
+
+  # Preprocessing
+  target_name:
+    distribution: constant
+    value: 'Yield'
+
+  delna_thr:
+    distribution: q_uniform
+    min: 0
+    max: 1
+    q: 0.1
+
+  fill_mode:
+    distribution: categorical
+    values: ['none', 'median', 'mean']
+
+  normalisation:
+    distribution: categorical
+    values: [True, False]
+
+  # XGBoost
+  estimator_name:
+    distribution: constant
+    value: 'XGBoost'
+
+  learning_rate:
+    distribution: q_uniform
+    min: 1e-5
+    max: 1e-1
+    q: 1e-5
+
+  max_depth:
+    distribution: int_uniform
+    min: 3
+    max: 10
+
+  min_child_weight:
+    distribution: int_uniform
+    min: 1
+    max: 7
+
+  subsample:
+    distribution: q_uniform
+    min: 0.1
+    max: 1
+    q: 0.1
+
+  colsample_bytree:
+    distribution: q_uniform
+    min: 0.1
+    max: 1
+    q: 0.1
+
+  colsample_bylevel:
+    distribution: q_uniform
+    min: 0.1
+    max: 1
+    q: 0.1
+
+  colsample_bynode:
+    distribution: q_uniform
+    min: 0.1
+    max: 1
+    q: 0.1
+
+  n_estimators:
+    distribution: q_uniform
+    min: 50
+    max: 1000
+    q: 10
