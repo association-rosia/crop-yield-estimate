@@ -33,6 +33,10 @@ parameters:
     values: [ True, False ]
 
   # Model
+  estimator_name:
+    distribution: constant
+    value: 'LightGBM'
+
   boosting_type:
     distribution: categorical
     values: [ 'gbdt', 'dart', 'rf' ]

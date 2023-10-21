@@ -33,5 +33,7 @@ parameters:
     values: [ True, False ]
 
   # Model
-
+  estimator_name:
+    distribution: constant
+    value: 'LCE'
 

@@ -52,7 +52,7 @@ class XGBConfig(BaseConfig):
                  max_depth: int = None,
                  max_leaves: int = None,
                  max_bin: int = None,
-                 grow_policy: int = None,
+                 grow_policy: str = None,
                  learning_rate: float = None,
                  booster: str = None,
                  tree_method: str = None,
