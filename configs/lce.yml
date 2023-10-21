@@ -30,7 +30,7 @@ parameters:
 
   normalisation:
     distribution: categorical
-    values: [True, False]
+    values: [ True, False ]
 
   # Model
 

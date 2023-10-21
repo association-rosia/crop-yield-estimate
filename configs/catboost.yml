@@ -30,7 +30,7 @@ parameters:
 
   normalisation:
     distribution: categorical
-    values: [True, False]
+    values: [ True, False ]
 
   # Model
   iterations:
@@ -100,7 +100,7 @@ parameters:
 
   grow_policy:
     distribution: categorical
-    values: ['SymmetricTree', 'Depthwise', 'Lossguide']
+    values: [ 'SymmetricTree', 'Depthwise', 'Lossguide' ]
 
   depth:
     distribution: int_uniform

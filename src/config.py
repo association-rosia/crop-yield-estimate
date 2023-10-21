@@ -1,10 +1,11 @@
 import inspect
 from typing import Any
 
+
 class BaseConfig:
     def __init__(self) -> None:
         pass
-    
+
     @classmethod
     def _get_param_names(cls):
         """Get parameter names for the configuration"""
@@ -17,7 +18,7 @@ class BaseConfig:
             for p in init_signature.parameters.values()
             if p.name != "self" and p.kind != p.VAR_KEYWORD and p.kind != p.VAR_POSITIONAL
         ]
-                
+
         return sorted([p.name for p in parameters])
 
     def get_params(self, deep=True):
@@ -47,19 +48,18 @@ class BaseConfig:
 
 class XGBConfig(BaseConfig):
     def __init__(
-        self,
-        colsample_bylevel: float = None,
-        colsample_bynode: float = None,
-        colsample_bytree: float = None,
-        learning_rate: int = None,
-        max_depth: int = None,
-        min_child_weight: int = None,
-        random_state: int = None,
-        subsample: float = None,
-        *args: Any,
-        **kwargs: Any
+            self,
+            colsample_bylevel: float = None,
+            colsample_bynode: float = None,
+            colsample_bytree: float = None,
+            learning_rate: int = None,
+            max_depth: int = None,
+            min_child_weight: int = None,
+            random_state: int = None,
+            subsample: float = None,
+            *args: Any,
+            **kwargs: Any
     ) -> None:
-        
         self.colsample_bylevel = colsample_bylevel
         self.colsample_bynode = colsample_bynode
         self.colsample_bytree = colsample_bytree

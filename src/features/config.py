@@ -1,6 +1,6 @@
-from typing import Any
 import os
 import sys
+from typing import Any
 
 sys.path.append(os.curdir)
 

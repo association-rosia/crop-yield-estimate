@@ -1,8 +1,8 @@
 import argparse
 import os
 import sys
-import argparse
 from multiprocessing import Process
+
 import yaml
 
 sys.path.append(os.curdir)
@@ -25,19 +25,19 @@ cst = get_constants()
 def main():
     # Configure & Start run
     run_config = parse_args()
-    
+
     # Load sweep config
     path_sweep = os.path.join(cst.path_configs, f'{run_config["estimator_name"].lower()}.yml')
     with open(path_sweep, 'r') as file:
         sweep = yaml.safe_load(file)
-    
+
     # Create sweep
     sweep_id = wandb.sweep(
         sweep=sweep,
         entity=cst.entity,
         project=cst.project,
     )
-    
+
     # Launch sweep
     if run_config['dry']:
         wandb.agent(
@@ -46,7 +46,7 @@ def main():
             entity=cst.entity,
             project=cst.project,
             count=5,
-        ) 
+        )
     else:
         launch_sweep(nb_agents=run_config['nb_agents'], sweep_id=sweep_id)
 
@@ -69,25 +69,25 @@ def launch_sweep(nb_agents: int, sweep_id: str):
     # complete the processes
     for agent in list_agent:
         agent.join()
-    
+
 
 def train():
     # Init wandb run
     run = wandb.init()
     # Get run config as dict
     run_config = run.config.as_dict()
-    
+
     # Init pre-processor
     preprocessor = init_preprocessor(run_config)
-    
+
     # Init estimator
     estimator = init_estimator(run_config)
-    
+
     # Pre-process data
     df_train = pd.read_csv(cst.file_data_train)
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     X_train = preprocessor.fit_transform(X_train)
-    
+
     # Create scorer from rmse function
     scorer = make_scorer(mean_squared_error, squared=False)
     # Cross-validate estimator
@@ -99,7 +99,7 @@ def train():
         cv=run_config['cv'],
         n_jobs=-1,
     )
-    
+
     # Log results
     run.log({
         'rmse/avg': np.mean(folds_score),
@@ -107,7 +107,7 @@ def train():
         'rmse/min': np.min(folds_score),
         'rmse/max': np.max(folds_score),
     })
-    
+
     # Finish run
     run.finish()
 
