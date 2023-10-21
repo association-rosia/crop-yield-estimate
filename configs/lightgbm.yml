@@ -45,9 +45,9 @@ parameters:
     distribution: constant
     value: 'rmse'
 
-  early_stopping_rounds:
+  early_stopping_round:
     distribution: constant
-    value: 30
+    value: 10
 
   boosting_type:
     distribution: categorical
