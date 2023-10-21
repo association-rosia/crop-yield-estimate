@@ -116,7 +116,7 @@ def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost'], help='Estimator to use.')
+    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'], help='Estimator to use.')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
     return parser.parse_args().__dict__
 

@@ -86,3 +86,44 @@ class XGBConfig(BaseConfig):
         self.reg_alpha = reg_alpha
         self.reg_lambda = reg_lambda
         self.scale_pos_weight = scale_pos_weight
+
+
+class LGBMConfig(BaseConfig):
+    def __init__(self,
+                 boosting_type: str = None,
+                 num_leaves: int = None,
+                 max_depth: int = None,
+                 learning_rate: float = None,
+                 n_estimators: int = None,
+                 subsample_for_bin: int = None,
+                 min_split_gain: int = None,
+                 min_child_weight: int = None,
+                 min_child_samples: int = None,
+                 subsample: float = None,
+                 subsample_freq: int = None,
+                 colsample_bytree: float = None,
+                 reg_alpha: float = None,
+                 reg_lambda: float = None,
+                 *args: Any, **kwargs: Any) -> None:
+        super().__init__()
+        self.boosting_type = boosting_type
+        self.num_leaves = num_leaves
+        self.max_depth = max_depth
+        self.learning_rate = learning_rate
+        self.n_estimators = n_estimators
+        self.subsample_for_bin = subsample_for_bin
+        self.min_split_gain = min_split_gain
+        self.min_child_weight = min_child_weight
+        self.min_child_samples = min_child_samples
+        self.subsample = subsample
+        self.subsample_freq = subsample_freq
+        self.colsample_bytree = colsample_bytree
+        self.reg_alpha = reg_alpha
+        self.reg_lambda = reg_lambda
+
+
+class LCEConfig(BaseConfig):
+    def __init__(self,
+                 *args: Any, **kwargs: Any) -> None:
+        super().__init__()
+
