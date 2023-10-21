@@ -98,6 +98,7 @@ def train():
         scoring=scorer,
         cv=run_config['cv'],
         n_jobs=-1,
+        verbose=0
     )
 
     # Log results
