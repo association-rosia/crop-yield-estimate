@@ -90,6 +90,9 @@ class XGBConfig(BaseConfig):
 
 class LGBMConfig(BaseConfig):
     def __init__(self,
+                 verbosity: int = None,
+                 metric: str = None,
+                 early_stopping_rounds: int = None,
                  boosting_type: str = None,
                  num_leaves: int = None,
                  max_depth: int = None,
@@ -106,6 +109,9 @@ class LGBMConfig(BaseConfig):
                  reg_lambda: float = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
+        self.verbosity = verbosity
+        self.metric = metric
+        self.early_stopping_rounds = early_stopping_rounds
         self.boosting_type = boosting_type
         self.num_leaves = num_leaves
         self.max_depth = max_depth
@@ -126,4 +132,3 @@ class LCEConfig(BaseConfig):
     def __init__(self,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
-
