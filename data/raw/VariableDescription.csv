@@ -1,0 +1,44 @@
+Variable,Description
+District,Name of the district
+Block,Name of the block
+CultLand,Area of total cultivated land
+CropCultLand,Area of land under cultivation
+LandPreparationMethod,Method for land preparation
+CropTillageDate,Date of tillage of the largest plot
+CropTillageDepth,Depth of the tillage
+CropEstMethod,Method of transplantation
+RcNursEstDate,Date of nursery establishment
+SeedingSowingTransplanting,Date of sowing/Transplanting the crop
+SeedlingsPerPit,Seedling planted per pit
+NursDetFactor,What are the reason of choosing the date of nursery
+TransDetFactor,What are the reason for choosing the date of transplantation
+TransplantingIrrigationHours,Hours of irrigation during transplantation
+TransplantingIrrigationSource,Source of water for irrigation during transplantation
+TransplantingIrrigationPowerSource,Source of power for irrigation pump during transplantation
+TransIrriCost,Cost of irrigation during transplantation
+StandingWater,How many days of standing water was there in the field
+OrgFertilizers,What organic fertilizer has the farmer used during transplantation
+Ganaura,Amount of organic fertilizer used (in Quintals)
+CropOrgFYM,Amount of FYM (Farm yard manure) organic fertilizer used (in Quintals)
+PCropSolidOrgFertAppMethod,Method of applying organic fertilizer in your previous crop during land preparation
+NoFertilizerAppln,Number of times chemical fertilizer has been applied in the entire crop cycle
+CropbasalFerts,Which type of chemical fertilizer has been applied during land preparation
+BasalDAP,Amount of DAP(in kgs)applied during land preparation
+BasalUrea,Amount of urea(in kgs) applied during land preparation
+MineralFertAppMethod,Method of applying chemical fertilizer in your current crop during land preparation
+FirstTopDressFert,Which type of chemical fertilizer has been applied in the second dose
+1tdUrea,Amount of urea (in kgs) applied in the second dose
+1appDaysUrea,How many days after first dose was second dose of urea was given
+2tdUrea,Amount of urea (in kgs) applied in the third dose
+2appDaysUrea,How many days after second dose was third dose of urea was given
+MineralFertAppMethod,Method of applying chemical fertilizer in your current crop during second dose
+Harv_method,Method of harvesting
+Harv_date,Date of harvesting
+Harv_hand_rent,"If labours were used or harvesting machine hired, what was the rent (in rupees)"
+Threshing_date,Date of threshing of harvested crop
+Threshing_method,Method of threshing of harvested crop
+Residue_length,Length of the residue left after harvesting
+Residue_perc,Percentage of residue left in the field after harvesting
+Stubble_use,Management practice of the stubble after harvesting
+Acre,Area of land under cultivation in acres
+Yield,Yield of the current crop
