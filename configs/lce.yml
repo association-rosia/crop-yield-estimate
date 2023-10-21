@@ -83,8 +83,8 @@ parameters:
 
   base_num_leaves:
     distribution: int_uniform
-    min: 10
-    max: 1000
+    min: 1
+    max: 100
 
   base_learning_rate:
     distribution: uniform
@@ -106,8 +106,8 @@ parameters:
 
   base_min_child_weight:
     distribution: uniform
-    min: 1
-    max: 100
+    min: 0
+    max: 1000
 
   base_subsample:
     distribution: uniform
@@ -137,11 +137,11 @@ parameters:
   base_reg_alpha:
     distribution: uniform
     min: 0
-    max: 5
+    max: 100
 
   base_reg_lambda:
     distribution: uniform
     min: 0
-    max: 5
+    max: 100
 
 

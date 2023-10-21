@@ -37,14 +37,26 @@ parameters:
     distribution: constant
     value: 'LightGBM'
 
+  verbosity:
+    distribution: constant
+    value: 0
+
+  metric:
+    distribution: constant
+    value: 'rmse'
+
+  early_stopping_rounds:
+    distribution: constant
+    value: 30
+
   boosting_type:
     distribution: categorical
     values: [ 'gbdt', 'dart', 'rf' ]
 
   num_leaves:
     distribution: int_uniform
-    min: 10
-    max: 1000
+    min: 1
+    max: 100
 
   max_depth:
     distribution: int_uniform
@@ -73,13 +85,13 @@ parameters:
 
   min_child_weight:
     distribution: uniform
-    min: 1
-    max: 100
+    min: 0
+    max: 1000
 
   min_child_samples:
     distribution: int_uniform
     min: 10
-    max: 100
+    max: 500
 
   subsample:
     distribution: uniform
@@ -99,10 +111,10 @@ parameters:
   reg_alpha:
     distribution: uniform
     min: 0
-    max: 5
+    max: 100
 
   reg_lambda:
     distribution: uniform
     min: 0
-    max: 5
+    max: 100
 
