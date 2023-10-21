@@ -39,7 +39,7 @@ parameters:
 
   verbosity:
     distribution: constant
-    value: 0
+    value: -1
 
   metric:
     distribution: constant
