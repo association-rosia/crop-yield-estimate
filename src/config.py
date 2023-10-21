@@ -90,9 +90,9 @@ class XGBConfig(BaseConfig):
 
 class LGBMConfig(BaseConfig):
     def __init__(self,
-                 verbosity: int = None,
+                 num_iterations: int = None,
                  metric: str = None,
-                 early_stopping_rounds: int = None,
+                 device: str = None,
                  boosting_type: str = None,
                  num_leaves: int = None,
                  max_depth: int = None,
@@ -107,11 +107,13 @@ class LGBMConfig(BaseConfig):
                  colsample_bytree: float = None,
                  reg_alpha: float = None,
                  reg_lambda: float = None,
+                 min_data_in_leaf: int = None,
+                 verbosity: int = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
-        self.verbosity = verbosity
+        self.num_iterations = num_iterations
         self.metric = metric
-        self.early_stopping_rounds = early_stopping_rounds
+        self.device = device
         self.boosting_type = boosting_type
         self.num_leaves = num_leaves
         self.max_depth = max_depth
@@ -126,6 +128,8 @@ class LGBMConfig(BaseConfig):
         self.colsample_bytree = colsample_bytree
         self.reg_alpha = reg_alpha
         self.reg_lambda = reg_lambda
+        self.min_data_in_leaf = min_data_in_leaf
+        self.verbosity = verbosity
 
 
 class LCEConfig(BaseConfig):
