@@ -97,7 +97,6 @@ def train():
         y=y_train.to_numpy(),
         scoring=scorer,
         cv=run_config['cv'],
-        n_jobs=-1,
         verbose=0
     )
 
