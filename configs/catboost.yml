@@ -1,0 +1,109 @@
+# General
+method: bayes
+
+metric:
+  name: rmse/avg
+  goal: minimize
+
+parameters:
+  random_state:
+    distribution: constant
+    value: 42
+
+  cv:
+    distribution: constant
+    value: 5
+
+  # Preprocessing
+  target_name:
+    distribution: constant
+    value: 'Yield'
+
+  delna_thr:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  fill_mode:
+    distribution: categorical
+    values: [ 'none', 'median', 'mean' ]
+
+  normalisation:
+    distribution: categorical
+    values: [True, False]
+
+  # Model
+  iterations:
+    distribution: int_uniform
+    min: 50
+    max: 2000
+
+  learning_rate:
+    distribution: uniform
+    min: 0.001
+    max: 0.3
+
+  depth:
+    distribution: int_uniform
+    min: 1
+    max: 10
+
+  l2_leaf_reg:
+    distribution: uniform
+    min: 0.1
+    max: 10
+
+  border_count:
+    distribution: int_uniform
+    min: 5
+    max: 255
+
+  subsample:
+    distribution: uniform
+    min: 0.1
+    max: 1
+
+  random_strength:
+    distribution: uniform
+    min: 0.1
+    max: 1
+
+  colsample_bylevel:
+    distribution: uniform
+    min: 0.1
+    max: 1
+
+  reg_lambda:
+    distribution: uniform
+    min: 0.1
+    max: 1
+
+  min_child_samples:
+    distribution: int_uniform
+    min: 1
+    max: 20
+
+  max_leaves:
+    distribution: int_uniform
+    min: 10
+    max: 1000
+
+  num_leaves:
+    distribution: int_uniform
+    min: 10
+    max: 1000
+
+  max_bin:
+    distribution: int_uniform
+    min: 4
+    max: 255
+
+  grow_policy:
+    distribution: categorical
+    values: ['SymmetricTree', 'Depthwise', 'Lossguide']
+
+  depth:
+    distribution: int_uniform
+    min: 1
+    max: 12
+

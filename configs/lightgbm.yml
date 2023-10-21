@@ -33,74 +33,61 @@ parameters:
     values: [True, False]
 
   # Model
+  boosting_type:
+    distribution: categorical
+    values: [ 'gbdt', 'dart', 'rf' ]
+
+  num_leaves:
+    distribution: int_uniform
+    min: 10
+    max: 1000
+
+  max_depth:
+    distribution: int_uniform
+    min: -1
+    max: 100
+
+  learning_rate:
+    distribution: uniform
+    min: 0.01
+    max: 0.5
+
   n_estimators:
     distribution: int_uniform
     min: 50
     max: 1000
 
-  max_depth:
+  subsample_for_bin:
     distribution: int_uniform
-    min: 3
-    max: 15
+    min: 100000
+    max: 300000
 
-  max_leaves:
-    distribution: int_uniform
-    min: 0
-    max: 100
-
-  max_bin:
-    distribution: int_uniform
-    min: 2
-    max: 255
-
-  grow_policy:
-    distribution: categorical
-    values: [ 0, 1 ]
-
-  learning_rate:
-    distribution: uniform
-    min: 0.01
-    max: 0.3
-
-  booster:
-    distribution: categorical
-    values: [ 'gbtree', 'gblinear', 'dart' ]
-
-  tree_method:
-    distribution: categorical
-    values: [ 'auto', 'exact', 'approx', 'hist' ]
-
-  gamma:
+  min_split_gain:
     distribution: uniform
     min: 0
-    max: 5
+    max: 1
 
   min_child_weight:
     distribution: uniform
-    min: 0
-    max: 10
+    min: 0.001
+    max: 1
 
-  max_delta_step:
-    distribution: uniform
-    min: 0
-    max: 10
+  min_child_samples:
+    distribution: int_uniform
+    min: 10
+    max: 100
 
   subsample:
     distribution: uniform
     min: 0.5
     max: 1
 
+  subsample_freq:
+    distribution: uniform
+    min: 0.5
+    max: 1
+
   colsample_bytree:
-    distribution: uniform
-    min: 0.5
-    max: 1
-
-  colsample_bylevel:
-    distribution: uniform
-    min: 0.5
-    max: 1
-
-  colsample_bynode:
     distribution: uniform
     min: 0.5
     max: 1
@@ -114,9 +101,4 @@ parameters:
     distribution: uniform
     min: 0
     max: 1
-
-  scale_pos_weight:
-    distribution: uniform
-    min: 0
-    max: 10
 
