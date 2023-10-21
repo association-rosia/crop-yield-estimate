@@ -45,7 +45,7 @@ def main():
             function=train,
             entity=cst.entity,
             project=cst.project,
-            count=5,
+            count=5
         )
     else:
         launch_sweep(nb_agents=run_config['nb_agents'], sweep_id=sweep_id)

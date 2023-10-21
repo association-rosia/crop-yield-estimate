@@ -47,24 +47,42 @@ class BaseConfig:
 
 
 class XGBConfig(BaseConfig):
-    def __init__(
-            self,
-            colsample_bylevel: float = None,
-            colsample_bynode: float = None,
-            colsample_bytree: float = None,
-            learning_rate: int = None,
-            max_depth: int = None,
-            min_child_weight: int = None,
-            random_state: int = None,
-            subsample: float = None,
-            *args: Any,
-            **kwargs: Any
-    ) -> None:
+    def __init__(self,
+                 n_estimators: int = None,
+                 max_depth: int = None,
+                 max_leaves: int = None,
+                 max_bin: int = None,
+                 grow_policy: int = None,
+                 learning_rate: float = None,
+                 booster: str = None,
+                 tree_method: str = None,
+                 gamma: float = None,
+                 min_child_weight: float = None,
+                 max_delta_step: float = None,
+                 subsample: float = None,
+                 colsample_bytree: float = None,
+                 colsample_bylevel: float = None,
+                 colsample_bynode: float = None,
+                 reg_alpha: float = None,
+                 reg_lambda: float = None,
+                 scale_pos_weight: float = None,
+                 *args: Any, **kwargs: Any) -> None:
+        super().__init__()
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.max_leaves = max_leaves
+        self.max_bin = max_bin
+        self.grow_policy = grow_policy
+        self.learning_rate = learning_rate
+        self.booster = booster
+        self.tree_method = tree_method
+        self.gamma = gamma
+        self.min_child_weight = min_child_weight
+        self.max_delta_step = max_delta_step
+        self.subsample = subsample
+        self.colsample_bytree = colsample_bytree
         self.colsample_bylevel = colsample_bylevel
         self.colsample_bynode = colsample_bynode
-        self.colsample_bytree = colsample_bytree
-        self.learning_rate = learning_rate
-        self.max_depth = max_depth
-        self.min_child_weight = min_child_weight
-        self.random_state = random_state
-        self.subsample = subsample
+        self.reg_alpha = reg_alpha
+        self.reg_lambda = reg_lambda
+        self.scale_pos_weight = scale_pos_weight

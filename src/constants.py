@@ -1,6 +1,8 @@
 import os
-
 import GPUtil
+
+from src.config import XGBConfig
+from xgboost import XGBRegressor
 
 
 class CYEConstants:
@@ -27,6 +29,13 @@ class CYEConstants:
         self.entity = 'association-rosia'
 
         self.target_column = 'Yield'
+
+        self.estimators = {
+            'XGBoost': {
+                'config': XGBConfig,
+                'estimator': XGBRegressor
+            }
+        }
 
     @staticmethod
     def init_device():
