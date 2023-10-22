@@ -190,7 +190,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X = self.delete_unique_value_cols(X)
         X = self.delete_empty_columns(X)
 
-
         return X
     
     def fit_transform(self, X: DataFrame, y=None, **fit_params) -> DataFrame:

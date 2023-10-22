@@ -5,6 +5,7 @@ import sys
 sys.path.append(os.curdir)
 
 import pandas as pd
+from pandas import Series
 
 import wandb
 from wandb.apis.public import Run
@@ -18,8 +19,20 @@ cst = get_constants()
 
 def main():
     # Get run id
-    run_id = parse_args()
+    list_run_id = parse_args()
     
+    list_predict = []
+    for run_id in list_run_id:
+        list_predict.append(predict(run_id))
+    df_preds = pd.concat(list_predict, axis='columns', join='inner')
+    
+    # Create submisiion file to be uploaded to Zindi for scoring
+    submission = pd.DataFrame({'ID': df_preds.index, 'Yield': df_preds.mean(axis='columns')})
+    file_submission = os.path.join(cst.path_submissions, f'{"-".join(list_run_id)}.csv')
+    submission.to_csv(file_submission, index=False)
+    
+
+def predict(run_id) -> Series:
     # Get run config
     run_config = get_run_config(run_id)
     
@@ -40,16 +53,11 @@ def main():
     # Pre-process Test data
     X_test = pd.read_csv(cst.file_data_test)
     X_test = preprocessor.transform(X_test)
-    
-    estimator.predict(X_test)
 
     # Predict target value
     preds = estimator.predict(X=X_test.to_numpy())
-
-    # Create submisiion file to be uploaded to Zindi for scoring
-    submission = pd.DataFrame({'ID': X_test.index, 'Yield': preds})
-    file_submission = os.path.join(cst.path_submissions, f'{run_id}.csv')
-    submission.to_csv(file_submission, index=False)
+    
+    return Series(preds, index=X_test.index)
     
 
 def get_run_config(run_id: str) -> dict:
@@ -69,7 +77,7 @@ def parse_args() -> dict:
     parser = argparse.ArgumentParser(description=f'Make {cst.project} submission')
 
     # Run name
-    parser.add_argument('--run_id', type=str, help='ID of wandb run to use for submission')
+    parser.add_argument('--run_id', nargs='+', type=str, help='ID of wandb run to use for submission. Give multiple IDs for ensemble submission.')
 
     return parser.parse_args().run_id
 
