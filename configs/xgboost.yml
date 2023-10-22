@@ -37,90 +37,63 @@ parameters:
     distribution: constant
     value: 'XGBoost'
 
+  eval_metric:
+    distribution: constant
+    value: 'rmse'
+
   n_estimators:
     distribution: int_uniform
-    min: 50
+    min: 100
     max: 1000
-
-  max_depth:
-    distribution: int_uniform
-    min: 3
-    max: 12
-
-  max_leaves:
-    distribution: int_uniform
-    min: 8
-    max: 4096
-
-  max_bin:
-    distribution: int_uniform
-    min: 2
-    max: 255
-
-  grow_policy:
-    distribution: categorical
-    values: [ 'depthwise', 'lossguide' ]
 
   learning_rate:
     distribution: uniform
-    min: 0.01
-    max: 0.5
+    min: 0
+    max: 1
 
-  booster:
-    distribution: categorical
-    values: [ 'gbtree', 'gblinear', 'dart' ]
+  max_depth:
+    distribution: int_uniform
+    min: 1
+    max: 100
 
-  tree_method:
-    distribution: categorical
-    values: [ 'auto', 'exact', 'approx', 'hist' ]
+  subsample:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  colsample_bytree:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  colsample_bylevel:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  colsample_bynode:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  min_child_weight:
+    distribution: uniform
+    min: 1
+    max: 5
+
+  reg_alpha:
+    distribution: uniform
+    min: 0
+    max: 50
+
+  reg_lambda:
+    distribution: uniform
+    min: 0
+    max: 50
 
   gamma:
     distribution: uniform
     min: 0
     max: 10
 
-  min_child_weight:
-    distribution: uniform
-    min: 0
-    max: 1000
-
-  max_delta_step:
-    distribution: uniform
-    min: 0
-    max: 10
-
-  subsample:
-    distribution: uniform
-    min: 0.5
-    max: 1
-
-  colsample_bytree:
-    distribution: uniform
-    min: 0.5
-    max: 1
-
-  colsample_bylevel:
-    distribution: uniform
-    min: 0.5
-    max: 1
-
-  colsample_bynode:
-    distribution: uniform
-    min: 0.5
-    max: 1
-
-  reg_alpha:
-    distribution: uniform
-    min: 0
-    max: 100
-
-  reg_lambda:
-    distribution: uniform
-    min: 0
-    max: 100
-
-  scale_pos_weight:
-    distribution: uniform
-    min: 0
-    max: 10
 

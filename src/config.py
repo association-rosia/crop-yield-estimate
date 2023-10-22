@@ -48,44 +48,32 @@ class BaseConfig:
 
 class XGBConfig(BaseConfig):
     def __init__(self,
+                 eval_metric: str = None,
                  n_estimators: int = None,
-                 max_depth: int = None,
-                 max_leaves: int = None,
-                 max_bin: int = None,
-                 grow_policy: str = None,
                  learning_rate: float = None,
-                 booster: str = None,
-                 tree_method: str = None,
-                 gamma: float = None,
-                 min_child_weight: float = None,
-                 max_delta_step: float = None,
+                 max_depth: int = None,
                  subsample: float = None,
                  colsample_bytree: float = None,
                  colsample_bylevel: float = None,
                  colsample_bynode: float = None,
-                 reg_alpha: float = None,
+                 min_child_weight: float = None,
                  reg_lambda: float = None,
-                 scale_pos_weight: float = None,
+                 reg_alpha: float = None,
+                 gamma: float = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
+        self.eval_metric = eval_metric
         self.n_estimators = n_estimators
-        self.max_depth = max_depth
-        self.max_leaves = max_leaves
-        self.max_bin = max_bin
-        self.grow_policy = grow_policy
         self.learning_rate = learning_rate
-        self.booster = booster
-        self.tree_method = tree_method
-        self.gamma = gamma
-        self.min_child_weight = min_child_weight
-        self.max_delta_step = max_delta_step
+        self.max_depth = max_depth
         self.subsample = subsample
         self.colsample_bytree = colsample_bytree
         self.colsample_bylevel = colsample_bylevel
         self.colsample_bynode = colsample_bynode
-        self.reg_alpha = reg_alpha
+        self.min_child_weight = min_child_weight
         self.reg_lambda = reg_lambda
-        self.scale_pos_weight = scale_pos_weight
+        self.reg_alpha = reg_alpha
+        self.gamma = gamma
 
 
 class LGBMConfig(BaseConfig):
