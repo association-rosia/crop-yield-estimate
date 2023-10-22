@@ -10,7 +10,7 @@ from pandas import Series
 import wandb
 from wandb.apis.public import Run
 
-from src.models.utils import init_estimator, init_preprocessor
+from src.models.utils import init_estimator, init_preprocessor, init_transformer
 
 from src.constants import get_constants
 
@@ -27,9 +27,10 @@ def main():
     df_preds = pd.concat(list_predict, axis='columns', join='inner')
     
     # Create submisiion file to be uploaded to Zindi for scoring
-    submission = pd.DataFrame({'ID': df_preds.index, 'Yield': df_preds.mean(axis='columns')})
+    submission = df_preds.mean(axis='columns')
+    submission.name = 'Yield'
     file_submission = os.path.join(cst.path_submissions, f'{"-".join(list_run_id)}.csv')
-    submission.to_csv(file_submission, index=False)
+    submission.to_csv(file_submission, index=True)
     
 
 def predict(run_id) -> Series:
@@ -39,25 +40,32 @@ def predict(run_id) -> Series:
     # Init pre-processor
     preprocessor = init_preprocessor(run_config)
     
+    # Init target transformer
+    transformer = init_transformer(run_config)
+    
     # Init estimator
     estimator = init_estimator(run_config)
     
     # Pre-process Train data
-    df_train = pd.read_csv(cst.file_data_train)
+    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+    y_train = transformer.fit_transform(X_train, y_train)
     X_train = preprocessor.fit_transform(X_train)
     
     # Train model
     estimator.fit(X=X_train.to_numpy(), y=y_train.to_numpy())
     
     # Pre-process Test data
-    X_test = pd.read_csv(cst.file_data_test)
+    X_test = pd.read_csv(cst.file_data_test, index_col='ID')
+    transformer.fit(X_test)
     X_test = preprocessor.transform(X_test)
 
     # Predict target value
-    preds = estimator.predict(X=X_test.to_numpy())
+    y_pred = estimator.predict(X=X_test.to_numpy())
+    y_pred = Series(y_pred, index=X_test.index)
+    y_pred = transformer.inverse_transform(y_pred)
     
-    return Series(preds, index=X_test.index)
+    return y_pred
     
 
 def get_run_config(run_id: str) -> dict:
