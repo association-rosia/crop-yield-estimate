@@ -39,6 +39,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     CORR_LIST_COLS = [('CropOrgFYM', 'OrgFertilizersFYM'), ('Ganaura', 'OrgFertilizersGanaura'),
                       ('BasalDAP', 'CropbasalFertsDAP'), ('BasalUrea', 'CropbasalFertsUrea'),
                       ('1tdUrea', 'FirstTopDressFertUrea')]
+    
+    CORR_ACRE_COLS = ['CultLand', 'CropCultLand', 'TransIrriCost', 'Ganaura', 
+                      'CropOrgFYM', 'Harv_hand_rent', 'BasalUrea', '1tdUrea', '2tdUrea'] 
 
     def __init__(
             self,
@@ -126,6 +129,12 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X = self.one_hot_encoding(X)
 
         return X
+    
+    def divide_by_acre(self, X: DataFrame) -> DataFrame:
+        X.loc[:, self.CORR_ACRE_COLS] = X[self.CORR_ACRE_COLS].divide(X['Acre'], axis='index')
+        X.drop(columns='Acre', inplace=True)
+        
+        return X
 
     def get_unique_value_cols(self, X: DataFrame):
         for col in X.columns:
@@ -158,6 +167,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
         
+        if self.config['scale'] == 'Acre':
+            X = self.divide_by_acre(X)
+        
         nan_columns = X.isnull().sum() / len(X) * 100
         nan_columns_to_delete = nan_columns > self.config['delna_thr']
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
@@ -178,6 +190,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.preprocess(X)
+        
+        if self.config['scale'] == 'Acre':
+            X = self.divide_by_acre(X)
         
         if self.config['fill_mode'] != 'none':
             X = self.fill_numerical_columns(X)
@@ -202,15 +217,24 @@ if __name__ == '__main__':
 
     cst = get_constants()
 
-    config = CYEConfigPreProcessor(normalisation=True, fill_mode='none', delna_thr=0.27)
-    dpp = CYEDataPreProcessor(config=config)
-    df_train = pd.read_csv(cst.file_data_train)
+    for normalisation in [True, False]:
+        for fill_mode in ['none', 'mean', 'median']:
+            for delna_thr in np.arange(0, 1.3, 0.3):
+                for scale in ['none', 'Acre']:                
+                    config = CYEConfigPreProcessor(
+                        normalisation=normalisation,
+                        fill_mode=fill_mode,
+                        delna_thr=delna_thr,
+                        scale=scale
+                    )
+                    dpp = CYEDataPreProcessor(config=config)
+                    df_train = pd.read_csv(cst.file_data_train)
 
-    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
-    X_train = dpp.fit_transform(X_train)
+                    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+                    X_train = dpp.fit_transform(X_train)
 
-    # Test data
-    X_test = pd.read_csv(cst.file_data_test)
-    X_test = dpp.transform(X_test)
+                    # Test data
+                    X_test = pd.read_csv(cst.file_data_test)
+                    X_test = dpp.transform(X_test)
 
     print()

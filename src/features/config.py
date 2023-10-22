@@ -12,6 +12,7 @@ class CYEConfigPreProcessor(BaseConfig):
         delna_thr=50,
         fill_mode='none',
         normalisation=True,
+        scale='none',
         *args: Any,
         **kwargs: Any
     ) -> None:
@@ -19,3 +20,4 @@ class CYEConfigPreProcessor(BaseConfig):
         self.delna_thr = delna_thr
         self.fill_mode = fill_mode
         self.normalisation = normalisation
+        self.scale = scale
