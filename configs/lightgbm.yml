@@ -37,11 +37,6 @@ parameters:
     distribution: constant
     value: 'LightGBM'
 
-  num_iterations:
-    distribution: int_uniform
-    min: 100
-    max: 1000
-
   metric:
     distribution: constant
     value: 'rmse'
@@ -50,82 +45,55 @@ parameters:
     distribution: constant
     value: 'cuda'
 
-  boosting_type:
-    distribution: categorical
-    values: [ 'gbdt', 'dart', 'rf' ]
-
-  num_leaves:
+  n_estimators:
     distribution: int_uniform
-    min: 8
-    max: 4096
-
-  max_depth:
-    distribution: int_uniform
-    min: 3
-    max: 12
+    min: 100
+    max: 1000
 
   learning_rate:
     distribution: uniform
-    min: 0.01
-    max: 0.5
+    min: 0
+    max: 1
 
-  n_estimators:
+  max_depth:
     distribution: int_uniform
-    min: 50
-    max: 1000
+    min: 1
+    max: 100
 
-  subsample_for_bin:
+  min_data_in_leaf:
     distribution: int_uniform
-    min: 100000
-    max: 300000
+    min: 1
+    max: 100
 
-  min_split_gain:
+  num_leaves:
+    distribution: int_uniform
+    min: 2
+    max: 1024
+
+  subsample: # bagging_fraction
     distribution: uniform
     min: 0
     max: 1
 
-  min_child_weight:
+  colsample_bytree: # feature_fraction
     distribution: uniform
     min: 0
-    max: 1000
-
-  min_child_samples:
-    distribution: int_uniform
-    min: 10
-    max: 500
-
-  subsample:
-    distribution: uniform
-    min: 0.5
-    max: 1
-
-  subsample_freq:
-    distribution: int_uniform
-    min: 0
-    max: 10
-
-  colsample_bytree:
-    distribution: uniform
-    min: 0.5
     max: 1
 
   reg_alpha:
     distribution: uniform
     min: 0
-    max: 100
+    max: 50
 
   reg_lambda:
     distribution: uniform
     min: 0
-    max: 100
+    max: 50
 
-  min_data_in_leaf:
-    distribution: int_uniform
-    min: 5
-    max: 300
+  gamma:
+    distribution: uniform
+    min: 0
+    max: 10
 
-  verbosity:
-    distribution: constant
-    value: -1
 
 
