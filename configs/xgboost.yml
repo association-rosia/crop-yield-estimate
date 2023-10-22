@@ -33,6 +33,10 @@ parameters:
     distribution: categorical
     values: [True, False]
 
+  scale:
+    distribution: categorical
+    values: ['none', 'Acre', 'CultLand', 'CropCultLand']
+
   # XGBoost
   estimator_name:
     distribution: constant
