@@ -40,7 +40,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
                       ('BasalDAP', 'CropbasalFertsDAP'), ('BasalUrea', 'CropbasalFertsUrea'),
                       ('1tdUrea', 'FirstTopDressFertUrea')]
     
-    CORR_ACRE_COLS = ['CultLand', 'CropCultLand', 'TransIrriCost', 'Ganaura', 
+    CORR_AREA_COLS = ['CultLand', 'CropCultLand', 'TransIrriCost', 'Ganaura', 
                       'CropOrgFYM', 'Harv_hand_rent', 'BasalUrea', '1tdUrea', '2tdUrea'] 
 
     def __init__(
@@ -130,9 +130,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
     
-    def divide_by_acre(self, X: DataFrame) -> DataFrame:
-        X.loc[:, self.CORR_ACRE_COLS] = X[self.CORR_ACRE_COLS].divide(X['Acre'], axis='index')
-        X.drop(columns='Acre', inplace=True)
+    def scale_area_columns(self, X: DataFrame) -> DataFrame:
+        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config['scale']], axis='index')
+        X.drop(columns=self.config['scale'], inplace=True)
         
         return X
 
@@ -167,8 +167,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
         
-        if self.config['scale'] == 'Acre':
-            X = self.divide_by_acre(X)
+        if self.config['scale'] != 'none':
+            X = self.scale_area_columns(X)
         
         nan_columns = X.isnull().sum() / len(X) * 100
         nan_columns_to_delete = nan_columns > self.config['delna_thr']
@@ -192,7 +192,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X = self.preprocess(X)
         
         if self.config['scale'] == 'Acre':
-            X = self.divide_by_acre(X)
+            X = self.scale_area_columns(X)
         
         if self.config['fill_mode'] != 'none':
             X = self.fill_numerical_columns(X)
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     for normalisation in [True, False]:
         for fill_mode in ['none', 'mean', 'median']:
             for delna_thr in np.arange(0, 1.3, 0.3):
-                for scale in ['none', 'Acre']:                
+                for scale in ['none', 'Acre', 'CultLand', 'CropCultLand']:                
                     config = CYEConfigPreProcessor(
                         normalisation=normalisation,
                         fill_mode=fill_mode,
