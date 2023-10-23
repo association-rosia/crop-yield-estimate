@@ -188,7 +188,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.preprocess(X)
         
-        if self.config['scale'] == 'Acre':
+        if self.config['scale'] != 'none':
             X = self.scale_area_columns(X)
         
         if self.config['fill_mode'] != 'none':
