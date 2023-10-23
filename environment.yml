@@ -9,7 +9,9 @@ dependencies:
       - pandas
       - numpy
       - GPUtil
-      - xgboost
       - plotly
       - matplotlib
-      - pytorch-tabnet
+      - xgboost
+      - lightgbm
+#      - lcensemble
+#      - pytorch-tabnet

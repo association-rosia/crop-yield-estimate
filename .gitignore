@@ -8,9 +8,7 @@ __pycache__
 .vscode
 
 # Directory
-data/**
 submissions/**
-models/**
 
 # Log
 wandb

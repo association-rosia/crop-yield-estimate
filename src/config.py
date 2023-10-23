@@ -1,10 +1,11 @@
 import inspect
 from typing import Any
 
+
 class BaseConfig:
     def __init__(self) -> None:
         pass
-    
+
     @classmethod
     def _get_param_names(cls):
         """Get parameter names for the configuration"""
@@ -17,7 +18,7 @@ class BaseConfig:
             for p in init_signature.parameters.values()
             if p.name != "self" and p.kind != p.VAR_KEYWORD and p.kind != p.VAR_POSITIONAL
         ]
-                
+
         return sorted([p.name for p in parameters])
 
     def get_params(self, deep=True):
@@ -46,25 +47,64 @@ class BaseConfig:
 
 
 class XGBConfig(BaseConfig):
-    def __init__(
-        self,
-        colsample_bylevel: float = None,
-        colsample_bynode: float = None,
-        colsample_bytree: float = None,
-        learning_rate: int = None,
-        max_depth: int = None,
-        min_child_weight: int = None,
-        random_state: int = None,
-        subsample: float = None,
-        *args: Any,
-        **kwargs: Any
-    ) -> None:
-        
-        self.colsample_bylevel = colsample_bylevel
-        self.colsample_bynode = colsample_bynode
-        self.colsample_bytree = colsample_bytree
+    def __init__(self,
+                 eval_metric: str = None,
+                 n_estimators: int = None,
+                 learning_rate: float = None,
+                 max_depth: int = None,
+                 subsample: float = None,
+                 colsample_bytree: float = None,
+                 colsample_bylevel: float = None,
+                 colsample_bynode: float = None,
+                 min_child_weight: float = None,
+                 reg_lambda: float = None,
+                 reg_alpha: float = None,
+                 gamma: float = None,
+                 *args: Any, **kwargs: Any) -> None:
+        super().__init__()
+        self.eval_metric = eval_metric
+        self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.max_depth = max_depth
-        self.min_child_weight = min_child_weight
-        self.random_state = random_state
         self.subsample = subsample
+        self.colsample_bytree = colsample_bytree
+        self.colsample_bylevel = colsample_bylevel
+        self.colsample_bynode = colsample_bynode
+        self.min_child_weight = min_child_weight
+        self.reg_lambda = reg_lambda
+        self.reg_alpha = reg_alpha
+        self.gamma = gamma
+
+
+class LGBMConfig(BaseConfig):
+    def __init__(self,
+                 metric: str = None,
+                 n_estimators: int = None,
+                 learning_rate: float = None,
+                 max_depth: int = None,
+                 min_data_in_leaf: int = None,
+                 num_leaves: int = None,
+                 subsample: float = None,
+                 colsample_bytree: float = None,
+                 reg_lambda: float = None,
+                 reg_alpha: float = None,
+                 gamma: float = None,
+                 *args: Any, **kwargs: Any) -> None:
+        super().__init__()
+        self.metric = metric
+        self.n_estimators = n_estimators
+        self.learning_rate = learning_rate
+        self.max_depth = max_depth
+        self.min_data_in_leaf = min_data_in_leaf
+        self.num_leaves = num_leaves
+        self.subsample = subsample
+        self.colsample_bytree = colsample_bytree
+        self.reg_lambda = reg_lambda
+        self.reg_alpha = reg_alpha
+        self.gamma = gamma
+
+
+class LCEConfig(BaseConfig):
+    def __init__(self,
+                 *args: Any, **kwargs: Any) -> None:
+        super().__init__()

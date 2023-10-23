@@ -1,6 +1,11 @@
 import os
 
 import GPUtil
+from lightgbm import LGBMRegressor
+from xgboost import XGBRegressor
+# from lce import LCERegressor
+
+from src.config import XGBConfig, LGBMConfig, LCEConfig
 
 
 class CYEConstants:
@@ -27,6 +32,21 @@ class CYEConstants:
         self.entity = 'association-rosia'
 
         self.target_column = 'Yield'
+
+        self.estimators = {
+            'XGBoost': {
+                'config': XGBConfig,
+                'estimator': XGBRegressor
+            },
+            'LightGBM': {
+                'config': LGBMConfig,
+                'estimator': LGBMRegressor
+            },
+            # 'LCE': {
+            #     'config': LCEConfig,
+            #     'estimator': LCERegressor
+            # }
+        }
 
     @staticmethod
     def init_device():
