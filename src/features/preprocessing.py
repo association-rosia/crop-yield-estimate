@@ -1,12 +1,15 @@
+import json
 import os
 import sys
+from typing import Any
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 from typing_extensions import Self
+import joblib
 
 sys.path.append(os.curdir)
 
@@ -14,7 +17,7 @@ from src.constants import get_constants
 
 cst = get_constants()
 
-from src.features.config import CYEConfigPreProcessor
+from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 
 
 class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
@@ -36,6 +39,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     CORR_LIST_COLS = [('CropOrgFYM', 'OrgFertilizersFYM'), ('Ganaura', 'OrgFertilizersGanaura'),
                       ('BasalDAP', 'CropbasalFertsDAP'), ('BasalUrea', 'CropbasalFertsUrea'),
                       ('1tdUrea', 'FirstTopDressFertUrea')]
+
+    CORR_AREA_COLS = ['CultLand', 'CropCultLand', 'TransIrriCost', 'Ganaura',
+                      'CropOrgFYM', 'Harv_hand_rent', 'BasalUrea', '1tdUrea', '2tdUrea']
 
     def __init__(
             self,
@@ -116,11 +122,17 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             self.to_fill_values[col] = value
 
     def preprocess(self, X: DataFrame) -> DataFrame:
-        X = X.set_index('ID')
+        X = X.copy(deep=True)
         X = self.one_hot_list(X)
         X = self.fill_correlated_list(X)
         X = self.cyclical_date_encoding(X)
         X = self.one_hot_encoding(X)
+
+        return X
+
+    def scale_area_columns(self, X: DataFrame) -> DataFrame:
+        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config['scale']], axis='index')
+        X.drop(columns=self.config['scale'], inplace=True)
 
         return X
 
@@ -155,6 +167,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
 
+        if self.config['scale'] != 'none':
+            X = self.scale_area_columns(X)
+
         nan_columns = X.isnull().sum() / len(X) * 100
         nan_columns_to_delete = nan_columns > self.config['delna_thr']
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
@@ -176,38 +191,87 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.preprocess(X)
 
+        if self.config['scale'] != 'none':
+            X = self.scale_area_columns(X)
+
         if self.config['fill_mode'] != 'none':
             X = self.fill_numerical_columns(X)
 
         X = self.make_consistent(X)
-
+        
         if self.config['normalisation']:
             X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
-
+            
         X = self.delete_unique_value_cols(X)
         X = self.delete_empty_columns(X)
 
+
         return X
-
+    
     def fit_transform(self, X: DataFrame, y=None, **fit_params) -> DataFrame:
-
+        
         return self.fit(X, **fit_params).transform(X)
 
+
+class CYETargetTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, config: CYEConfigTransformer) -> None:
+        super().__init__()
+
+        self.config = config.__dict__
+        self.scaler = None
+
+    def fit(self, X: DataFrame, y: Series = None) -> Self:
+        if self.config['scale'] != 'none':
+            self.scaler = X[self.config['scale']].copy(deep=True)
+
+        return self
+
+    def transform(self, y: Series) -> Series:
+        if self.config['scale'] != 'none':
+            y = y / self.scaler
+
+        return y
+
+    def fit_transform(self, X: DataFrame, y: Series) -> Series:
+
+        return self.fit(X, y).transform(y)
+
+    def inverse_transform(self, y: Series) -> Series:
+        if self.config['scale'] != 'none':
+            y = y * self.scaler
+
+        return y
 
 if __name__ == '__main__':
     from src.constants import get_constants
 
     cst = get_constants()
 
-    config = CYEConfigPreProcessor(normalisation=True, fill_mode='none', delna_thr=0.27)
-    dpp = CYEDataPreProcessor(config=config)
-    df_train = pd.read_csv(cst.file_data_train)
+    for normalisation in [True, False]:
+        for fill_mode in ['none', 'mean', 'median']:
+            for delna_thr in np.arange(0, 1.3, 0.3):
+                for scale in ['none', 'Acre', 'CultLand', 'CropCultLand']:
+                    config = CYEConfigPreProcessor(
+                        normalisation=normalisation,
+                        fill_mode=fill_mode,
+                        delna_thr=delna_thr,
+                        scale=scale
+                    )
+                    dpp = CYEDataPreProcessor(config=config)
 
-    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
-    X_train = dpp.fit_transform(X_train)
+                    config = CYEConfigTransformer(scale=scale)
+                    dtt = CYETargetTransformer(config=config)
 
-    # Test data
-    X_test = pd.read_csv(cst.file_data_test)
-    X_test = dpp.transform(X_test)
+                    df_train = pd.read_csv(cst.file_data_train)
+
+                    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+                    y_train = dtt.fit_transform(X_train, y_train)
+                    X_train = dpp.fit_transform(X_train)
+                    y_train = dtt.inverse_transform(y_train)
+
+                    # Test data
+                    X_test = pd.read_csv(cst.file_data_test)
+                    y_test = dtt.fit(X_test)
+                    X_test = dpp.transform(X_test)
 
     print()

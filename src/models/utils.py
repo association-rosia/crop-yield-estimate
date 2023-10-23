@@ -1,21 +1,29 @@
 from sklearn.base import BaseEstimator
-from src.features.config import CYEConfigPreProcessor
-from src.features.preprocessing import CYEDataPreProcessor
 
-from src.constants import get_constants
-cst = get_constants()
+from src.config import XGBConfig
+from xgboost.sklearn import XGBRegressor
+
+from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
+from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 
 
 def init_preprocessor(run_config: dict) -> CYEDataPreProcessor:
     config_preprocessor = CYEConfigPreProcessor(**run_config)
-    preprocessor = CYEDataPreProcessor(config_preprocessor)
 
-    return preprocessor
+    return CYEDataPreProcessor(config_preprocessor)
+
+
+def init_transformer(run_config: dict) -> CYETargetTransformer:
+    config_transformer = CYEConfigTransformer(**run_config)
+
+    return CYETargetTransformer(config_transformer)
 
 
 def init_estimator(run_config: dict) -> BaseEstimator:
-    estimator_name = run_config['estimator_name']
-    estimator_config = cst.estimators[estimator_name]['config'](**run_config).get_params()
-    estimator = cst.estimators[estimator_name]['estimator'](**estimator_config)
-
+    if run_config['estimator_name'] == 'XGBoost':
+        estimator_config = XGBConfig(**run_config)
+        estimator = XGBRegressor(**estimator_config.get_params()) 
+    else:
+        raise NotImplementedError(f'Estimator {run_config["estimator_name"]} are not implemented.')
+    
     return estimator
