@@ -1,7 +1,5 @@
-import json
 import os
 import sys
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -9,7 +7,6 @@ from pandas import DataFrame, Series
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 from typing_extensions import Self
-import joblib
 
 sys.path.append(os.curdir)
 
@@ -198,18 +195,17 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             X = self.fill_numerical_columns(X)
 
         X = self.make_consistent(X)
-        
+
         if self.config['normalisation']:
             X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
-            
+
         X = self.delete_unique_value_cols(X)
         X = self.delete_empty_columns(X)
 
-
         return X
-    
+
     def fit_transform(self, X: DataFrame, y=None, **fit_params) -> DataFrame:
-        
+
         return self.fit(X, **fit_params).transform(X)
 
 
@@ -241,6 +237,7 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
             y = y * self.scaler
 
         return y
+
 
 if __name__ == '__main__':
     from src.constants import get_constants

@@ -1,10 +1,11 @@
 import os
+
 import GPUtil
+from lightgbm import LGBMRegressor
+from xgboost import XGBRegressor
+# from lce import LCERegressor
 
 from src.config import XGBConfig, LGBMConfig, LCEConfig
-from xgboost import XGBRegressor
-from lightgbm import LGBMRegressor
-# from lce import LCERegressor
 
 
 class CYEConstants:
@@ -41,10 +42,10 @@ class CYEConstants:
                 'config': LGBMConfig,
                 'estimator': LGBMRegressor
             },
-            'LCE': {
-                'config': LCEConfig,
-                # 'estimator': LCERegressor
-            }
+            # 'LCE': {
+            #     'config': LCEConfig,
+            #     'estimator': LCERegressor
+            # }
         }
 
     @staticmethod
