@@ -79,7 +79,7 @@ class XGBConfig(BaseConfig):
 class LGBMConfig(BaseConfig):
     def __init__(self,
                  metric: str = None,
-                 device: str = None,
+                 # device: str = None,
                  n_estimators: int = None,
                  learning_rate: float = None,
                  max_depth: int = None,
@@ -93,7 +93,7 @@ class LGBMConfig(BaseConfig):
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.metric = metric
-        self.device = device
+        # self.device = device
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.max_depth = max_depth
