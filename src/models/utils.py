@@ -3,14 +3,20 @@ from sklearn.base import BaseEstimator
 from src.config import XGBConfig
 from xgboost.sklearn import XGBRegressor
 
-from src.features.preprocessing import CYEDataPreProcessor
-from src.features.config import CYEConfigPreProcessor
+from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
+from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 
 
 def init_preprocessor(run_config: dict) -> CYEDataPreProcessor:
     config_preprocessor = CYEConfigPreProcessor(**run_config)
 
     return CYEDataPreProcessor(config_preprocessor)
+
+
+def init_transformer(run_config: dict) -> CYETargetTransformer:
+    config_transformer = CYEConfigTransformer(**run_config)
+    
+    return CYETargetTransformer(config_transformer)
 
 
 def init_estimator(run_config: dict) -> BaseEstimator:

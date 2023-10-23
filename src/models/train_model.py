@@ -8,14 +8,13 @@ import yaml
 sys.path.append(os.curdir)
 
 import pandas as pd
-import numpy as np
 
 import wandb
 
-from src.models.utils import init_preprocessor, init_estimator
+from src.models.utils import init_preprocessor, init_estimator, init_transformer
 
-from sklearn.metrics import mean_squared_error, make_scorer
-from sklearn.model_selection import cross_val_score
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import cross_val_predict
 
 from src.constants import get_constants
 
@@ -80,33 +79,33 @@ def train():
     # Init pre-processor
     preprocessor = init_preprocessor(run_config)
     
+    # Init target transformer
+    transformer = init_transformer(run_config)
+    
     # Init estimator
     estimator = init_estimator(run_config)
     
     # Pre-process data
-    df_train = pd.read_csv(cst.file_data_train)
+    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+    y_train = transformer.fit_transform(X_train, y_train)
     X_train = preprocessor.fit_transform(X_train)
     
-    # Create scorer from rmse function
-    scorer = make_scorer(mean_squared_error, squared=False)
     # Cross-validate estimator
-    folds_score = cross_val_score(
+    y_pred = cross_val_predict(
         estimator=estimator,
         X=X_train.to_numpy(),
         y=y_train.to_numpy(),
-        scoring=scorer,
         cv=run_config['cv'],
         n_jobs=-1,
     )
     
+    # Compute RMSE
+    y_pred = transformer.inverse_transform(y_pred)
+    rmse = mean_squared_error(y_pred=y_pred, y_true=y_train, squared=False)
+    
     # Log results
-    run.log({
-        'rmse/avg': np.mean(folds_score),
-        'rmse/med': np.median(folds_score),
-        'rmse/min': np.min(folds_score),
-        'rmse/max': np.max(folds_score),
-    })
+    run.log({'rmse': rmse})
     
     # Finish run
     run.finish()
