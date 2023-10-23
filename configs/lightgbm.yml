@@ -41,9 +41,9 @@ parameters:
     distribution: constant
     value: 'rmse'
 
-  device:
-    distribution: constant
-    value: 'cuda'
+#  device:
+#    distribution: constant
+#    value: 'cuda'
 
   n_estimators:
     distribution: int_uniform
