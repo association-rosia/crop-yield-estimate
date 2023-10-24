@@ -13,5 +13,5 @@ dependencies:
       - matplotlib
       - xgboost
       - lightgbm
-#      - lcensemble
-#      - pytorch-tabnet
+      - lcensemble
+      - pytorch-tabnet
