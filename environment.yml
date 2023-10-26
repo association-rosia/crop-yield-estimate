@@ -14,5 +14,3 @@ dependencies:
       - xgboost
       - lightgbm
       - catboost
-      - lcensemble
-      - pytorch-tabnet
