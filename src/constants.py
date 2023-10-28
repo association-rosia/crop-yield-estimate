@@ -2,7 +2,7 @@ import os
 
 import GPUtil
 from lightgbm import LGBMRegressor
-from xgboost import XGBRegressor
+from xgboost import XGBRegressor, XGBClassifier
 # from lce import LCERegressor
 
 from src.config import XGBConfig, LGBMConfig, LCEConfig
@@ -37,6 +37,10 @@ class CYEConstants:
             'XGBoost': {
                 'config': XGBConfig,
                 'estimator': XGBRegressor
+            },
+            'XGBoostCls': {
+                'config': XGBConfig,
+                'estimator': XGBClassifier
             },
             'LightGBM': {
                 'config': LGBMConfig,

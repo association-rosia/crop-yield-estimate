@@ -62,7 +62,7 @@ def predict(run_id) -> Series:
 
     # Predict target value
     y_pred = estimator.predict(X=X_test.to_numpy())
-    y_pred = Series(y_pred, index=X_test.index)
+    y_pred = Series(y_pred, index=X_test.index).to
     y_pred = transformer.inverse_transform(y_pred)
 
     return y_pred

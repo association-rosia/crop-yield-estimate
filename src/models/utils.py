@@ -1,6 +1,7 @@
 from sklearn.base import BaseEstimator
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
+from src.models.custom_model import CustomEstimator
 
 from src.constants import get_constants
 cst = get_constants()
