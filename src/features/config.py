@@ -11,8 +11,8 @@ class CYEConfigPreProcessor(BaseConfig):
     def __init__(
             self,
             delna_thr=50,
-            fill_mode='none',
-            normalisation=True,
+            fillna=False,
+            normalisation=False,
             scale='none',
             *args: Any,
             **kwargs: Any
@@ -20,7 +20,7 @@ class CYEConfigPreProcessor(BaseConfig):
         super().__init__()
 
         self.delna_thr = delna_thr
-        self.fill_mode = fill_mode
+        self.fillna = fillna
         self.normalisation = normalisation
         self.scale = scale
 
