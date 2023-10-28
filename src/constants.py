@@ -1,7 +1,7 @@
 import os
 
 import GPUtil
-from lightgbm import LGBMRegressor
+from lightgbm import LGBMRegressor, LGBMClassifier
 from xgboost import XGBRegressor, XGBClassifier
 # from lce import LCERegressor
 
@@ -33,14 +33,16 @@ class CYEConstants:
 
         self.target_column = 'Yield'
 
-        self.estimators = {
+        self.reg_estimators = self.init_reg_estimators()
+        
+        self.cls_estimators = self.init_cls_estimators()
+        
+    
+    def init_reg_estimators(self):
+        reg_estimators = {
             'XGBoost': {
                 'config': XGBConfig,
                 'estimator': XGBRegressor
-            },
-            'XGBoostCls': {
-                'config': XGBConfig,
-                'estimator': XGBClassifier
             },
             'LightGBM': {
                 'config': LGBMConfig,
@@ -51,6 +53,23 @@ class CYEConstants:
             #     'estimator': LCERegressor
             # }
         }
+        
+        return reg_estimators
+    
+    
+    def init_cls_estimators(self):
+        cls_estimators = {
+            'XGBoost': {
+                'config': XGBConfig,
+                'estimator': XGBClassifier
+            },
+            'LightGBM': {
+                'config': LGBMConfig,
+                'estimator': LGBMClassifier
+            },
+        }
+        
+        return cls_estimators
 
     @staticmethod
     def init_device():

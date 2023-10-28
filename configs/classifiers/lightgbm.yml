@@ -2,8 +2,8 @@
 method: bayes
 
 metric:
-  name: rmse/avg
-  goal: minimize
+  name: cls/f1
+  goal: maximize
 
 parameters:
   random_state:
@@ -13,6 +13,10 @@ parameters:
   cv:
     distribution: constant
     value: 5
+
+  task:
+    distribution: constant
+    value: 'classification'
 
   # Preprocessing
   target_name:
@@ -33,17 +37,25 @@ parameters:
     values: [ True, False ]
 
   scale:
-    distribution: categorical
-    values: [ 'none', 'Acre', 'CultLand', 'CropCultLand' ]
+    distribution: constant
+    value: 'none'
+
+  limit_h:
+    distribution: constant
+    value: 5000
+
+  limit_l:
+    distribution: constant
+    value: 500
 
   # Model
   estimator_name:
     distribution: constant
-    value: 'XGBoost'
+    value: 'LightGBM'
 
-  eval_metric:
-    distribution: constant
-    value: 'rmse'
+  class_weight:
+    distribution: categorical
+    values: ['balanced', None]
 
   n_estimators:
     distribution: int_uniform
@@ -60,30 +72,25 @@ parameters:
     min: 1
     max: 100
 
-  subsample:
-    distribution: uniform
-    min: 0
-    max: 1
-
-  colsample_bytree:
-    distribution: uniform
-    min: 0
-    max: 1
-
-  colsample_bylevel:
-    distribution: uniform
-    min: 0
-    max: 1
-
-  colsample_bynode:
-    distribution: uniform
-    min: 0
-    max: 1
-
-  min_child_weight:
-    distribution: uniform
+  min_data_in_leaf:
+    distribution: int_uniform
     min: 1
-    max: 5
+    max: 100
+
+  num_leaves:
+    distribution: int_uniform
+    min: 2
+    max: 1024
+
+  subsample: # bagging_fraction
+    distribution: uniform
+    min: 0
+    max: 1
+
+  colsample_bytree: # feature_fraction
+    distribution: uniform
+    min: 0
+    max: 1
 
   reg_alpha:
     distribution: uniform
@@ -95,9 +102,6 @@ parameters:
     min: 0
     max: 50
 
-  gamma:
-    distribution: uniform
-    min: 0
-    max: 10
-
-
+  verbosity:
+    distribution: constant
+    value: -1

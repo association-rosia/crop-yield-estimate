@@ -11,9 +11,13 @@ import pandas as pd
 
 import wandb
 
-from src.models.utils import init_preprocessor, init_estimator, init_transformer
+from src.models.utils import (
+    init_preprocessor,
+    init_estimator,
+    init_transformer,
+    init_evaluation_metrics,
+)
 
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_predict
 
 from src.constants import get_constants
@@ -26,7 +30,11 @@ def main():
     run_config = parse_args()
 
     # Load sweep config
-    path_sweep = os.path.join(cst.path_configs, f'{run_config["estimator_name"].lower()}.yml')
+    if run_config['task'] == 'regression':
+        dir_config = 'regressors'
+    elif run_config['task'] == 'classification':
+        dir_config = 'classifiers'
+    path_sweep = os.path.join(cst.path_configs, dir_config, f'{run_config["estimator_name"].lower()}.yml')
     with open(path_sweep, 'r') as file:
         sweep = yaml.safe_load(file)
 
@@ -84,6 +92,9 @@ def train():
 
     # Init estimator
     estimator = init_estimator(run_config)
+    
+    # Init evaluation metrics
+    evaluation_metrics = init_evaluation_metrics(run_config)
 
     # Pre-process data
     df_train = pd.read_csv(cst.file_data_train, index_col='ID')
@@ -103,20 +114,24 @@ def train():
     # Compute RMSE
     y_pred = transformer.inverse_transform(y_pred)
     y_train = transformer.inverse_transform(y_train)
-    rmse = mean_squared_error(y_pred=y_pred, y_true=y_train, squared=False)
+    
+    metrics = evaluation_metrics(y_pred=y_pred, y_true=y_train)
 
     # Log results
-    run.log({'rmse': rmse})
+    run.log(metrics)
 
     # Finish run
     run.finish()
+    
+    return 0
 
 
 def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'CustomEstimator'], help='Estimator to use.')
+    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'], help='Estimator to use')
+    parser.add_argument('--task', type=str, default='regression', choices=['classification', 'regression'], help='Task to be performed')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
     return parser.parse_args().__dict__
 

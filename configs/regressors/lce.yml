@@ -2,7 +2,7 @@
 method: bayes
 
 metric:
-  name: rmse/avg
+  name: reg/rmse
   goal: minimize
 
 parameters:
@@ -13,6 +13,10 @@ parameters:
   cv:
     distribution: constant
     value: 5
+
+  task:
+    distribution: constant
+    value: 'regression'
 
   # Preprocessing
   target_name:

@@ -1,0 +1,99 @@
+# General
+method: bayes
+
+metric:
+  name: reg/rmse
+  goal: minimize
+
+parameters:
+  random_state:
+    distribution: constant
+    value: 42
+
+  cv:
+    distribution: constant
+    value: 5
+
+  task:
+    distribution: constant
+    value: 'regression'
+
+  # Preprocessing
+  target_name:
+    distribution: constant
+    value: 'Yield'
+
+  delna_thr:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  fill_mode:
+    distribution: categorical
+    values: [ 'none', 'median', 'mean' ]
+
+  normalisation:
+    distribution: categorical
+    values: [ True, False ]
+
+  # Model
+  estimator_name:
+    distribution: constant
+    value: 'LightGBM'
+
+  metric:
+    distribution: constant
+    value: 'rmse'
+
+  #  device:
+  #    distribution: constant
+  #    value: 'cuda'
+
+  n_estimators:
+    distribution: int_uniform
+    min: 100
+    max: 1000
+
+  learning_rate:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  max_depth:
+    distribution: int_uniform
+    min: 1
+    max: 100
+
+  min_data_in_leaf:
+    distribution: int_uniform
+    min: 1
+    max: 100
+
+  num_leaves:
+    distribution: int_uniform
+    min: 2
+    max: 1024
+
+  subsample: # bagging_fraction
+    distribution: uniform
+    min: 0
+    max: 1
+
+  colsample_bytree: # feature_fraction
+    distribution: uniform
+    min: 0
+    max: 1
+
+  reg_alpha:
+    distribution: uniform
+    min: 0
+    max: 50
+
+  reg_lambda:
+    distribution: uniform
+    min: 0
+    max: 50
+
+  verbosity:
+    distribution: constant
+    value: -1

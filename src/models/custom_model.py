@@ -1,8 +1,6 @@
-import os
-import sys
-
-from pandas import Series, DataFrame
+from typing_extensions import Self
 from sklearn.base import BaseEstimator, TransformerMixin
+from xgboost.sklearn import XGBClassifier, XGBRegressor
 import numpy as np
 from numpy import ndarray
 
@@ -13,10 +11,10 @@ cst = get_constants()
 class CustomEstimator(BaseEstimator, TransformerMixin):
     def __init__(
             self,
-            estimator_cls: BaseEstimator,
-            estimator_reg_l: BaseEstimator,
-            estimator_reg_m: BaseEstimator,
-            estimator_reg_h: BaseEstimator,
+            estimator_cls: XGBClassifier,
+            estimator_reg_l: XGBRegressor,
+            estimator_reg_m: XGBRegressor,
+            estimator_reg_h: XGBRegressor,
             limit_h: int,
             limit_l: int,
     ) -> None:
@@ -27,34 +25,14 @@ class CustomEstimator(BaseEstimator, TransformerMixin):
         self.estimator_reg_h = estimator_reg_h
         self.limit_h = limit_h
         self.limit_l = limit_l
-        
-    def create_labels(self, X: DataFrame, y: Series) -> ndarray:
-        # 0: Low, 1: Middle, 2: Hight
-        yield_by_acre = y / X['Acre']
-        y_1 = yield_by_acre < self.limit_h
-        y_2 = yield_by_acre < self.limit_l
-        
-        return y_1.astype(int) + y_2.astype(int)
 
-    def fit(self, X: DataFrame, y: Series):
-        y_cls = self.create_labels(X, y)
-        self.estimator_cls.fit(X.to_numpy(), y_cls.to_numpy())
+    def fit(self, X: ndarray = None, y: ndarray = None) -> Self:
         
-        X_h = np.where(y_cls == 2, X)
-        y_h = np.where(y_cls == 2, y)
-        self.estimator_reg_h.fit(X_h, y_h)
-        
-        X_m = np.where(y_cls == 1, X)
-        y_m = np.where(y_cls == 1, y)
-        self.estimator_reg_m.fit(X_m, y_m)
-        
-        X_l = np.where(y_cls == 0, X)
-        y_l = np.where(y_cls == 0, y)
-        self.estimator_reg_l.fit(X_l, y_l)
+        return Self
     
     def predict(self, X: ndarray) -> ndarray:
         y_cls = self.estimator_cls.predict(X)
-        y_pred = np.zeros(y_cls.shape)
+        y_pred = np.zeros((len(y_cls),))
         
         X_h = np.where(y_cls == 2, X)
         y_pred_h = self.estimator_reg_h.predict(X_h)

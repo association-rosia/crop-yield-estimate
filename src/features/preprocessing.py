@@ -45,7 +45,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             config: CYEConfigPreProcessor,
     ) -> None:
 
-        self.config = config.get_params()
+        self.config = config
 
         self.to_del_cols = []
         self.to_fill_cols = []
@@ -109,9 +109,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
     def compute_filling_values(self, X: DataFrame):
         for col in self.to_fill_cols:
-            if self.config['fill_mode'] == 'mean':
+            if self.config.fill_mode == 'mean':
                 value = X[col].mean()
-            elif self.config['fill_mode'] == 'median':
+            elif self.config.fill_mode == 'median':
                 value = X[col].median()
             else:
                 raise NotImplementedError('Unknown filling mode')
@@ -128,8 +128,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def scale_area_columns(self, X: DataFrame) -> DataFrame:
-        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config['scale']], axis='index')
-        X.drop(columns=self.config['scale'], inplace=True)
+        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config.scale], axis='index')
+        X.drop(columns=self.config.scale, inplace=True)
 
         return X
 
@@ -164,21 +164,21 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
 
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             X = self.scale_area_columns(X)
 
-        nan_columns = X.isnull().sum() / len(X) * 100
-        nan_columns_to_delete = nan_columns > self.config['delna_thr']
+        nan_columns = X.isnull().sum() / len(X)
+        nan_columns_to_delete = nan_columns > self.config.delna_thr
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
-        if self.config['fill_mode'] != 'none':
-            nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config['delna_thr'])
+        if self.config.fill_mode != 'none':
+            nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config.delna_thr)
             self.to_fill_cols = nan_columns_to_fill[nan_columns_to_fill].index.tolist()
 
             self.compute_filling_values(X)
             self.get_unique_value_cols(X)
 
-        if self.config['normalisation']:
+        if self.config.normalisation:
             self.scaler.fit(X)
 
         self.out_columns = X.columns.tolist()
@@ -188,15 +188,15 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.preprocess(X)
 
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             X = self.scale_area_columns(X)
 
-        if self.config['fill_mode'] != 'none':
+        if self.config.fill_mode != 'none':
             X = self.fill_numerical_columns(X)
 
         X = self.make_consistent(X)
 
-        if self.config['normalisation']:
+        if self.config.normalisation:
             X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
 
         X = self.delete_unique_value_cols(X)
@@ -213,18 +213,33 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, config: CYEConfigTransformer) -> None:
         super().__init__()
 
-        self.config = config.__dict__
+        self.config = config
         self.scaler = None
+        self.acre = None
+        
+    def create_labels(self, y: Series) -> Series:
+        # 0: Low, 1: Middle, 2: Hight
+        target_by_acre = y / self.acre
+        y_1 = target_by_acre < self.config.limit_h
+        y_2 = target_by_acre < self.config.limit_l
+        
+        return y_1.astype(int) + y_2.astype(int)
 
     def fit(self, X: DataFrame, y: Series = None) -> Self:
-        if self.config['scale'] != 'none':
-            self.scaler = X[self.config['scale']].copy(deep=True)
-
+        if self.config.scale != 'none':
+            self.scaler = X[self.config.scale].copy(deep=True)
+            
+        if self.config.task == 'classification':
+            self.acre = X['Acre'].copy(deep=True)
+            
         return self
 
     def transform(self, y: Series) -> Series:
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             y = y / self.scaler
+            
+        if self.config.task == 'classification':
+            y = self.create_labels(y)
 
         return y
 
@@ -233,7 +248,7 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
         return self.fit(X, y).transform(y)
 
     def inverse_transform(self, y: Series) -> Series:
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             y = y * self.scaler
 
         return y
