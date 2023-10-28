@@ -123,7 +123,7 @@ def train():
     # Finish run
     run.finish()
     
-    return 0
+    return True
 
 
 def parse_args() -> dict:

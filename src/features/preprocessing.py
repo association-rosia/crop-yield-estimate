@@ -220,10 +220,10 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
     def create_labels(self, y: Series) -> Series:
         # 0: Low, 1: Middle, 2: Hight
         target_by_acre = y / self.acre
-        y_1 = target_by_acre < self.config.limit_h
-        y_2 = target_by_acre < self.config.limit_l
+        y_h = target_by_acre > self.config.limit_h
+        y_h_m = target_by_acre > self.config.limit_l
         
-        return y_1.astype(int) + y_2.astype(int)
+        return y_h.astype(int) + y_h_m.astype(int)
 
     def fit(self, X: DataFrame, y: Series = None) -> Self:
         if self.config.scale != 'none':
