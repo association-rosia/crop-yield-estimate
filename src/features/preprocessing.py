@@ -259,7 +259,7 @@ if __name__ == '__main__':
                     config = CYEConfigTransformer(scale=scale)
                     dtt = CYETargetTransformer(config=config)
 
-                    df_train = pd.read_csv(cst.file_data_train)
+                    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
                     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
                     y_train = dtt.fit_transform(X_train, y_train)
@@ -267,7 +267,7 @@ if __name__ == '__main__':
                     y_train = dtt.inverse_transform(y_train)
 
                     # Test data
-                    X_test = pd.read_csv(cst.file_data_test)
+                    X_test = pd.read_csv(cst.file_data_test, index_col='ID')
                     y_test = dtt.fit(X_test)
                     X_test = dpp.transform(X_test)
 

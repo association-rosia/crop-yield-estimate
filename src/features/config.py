@@ -10,9 +10,9 @@ from src.config import BaseConfig
 class CYEConfigPreProcessor(BaseConfig):
     def __init__(
             self,
-            delna_thr=50,
+            delna_thr=100,
             fill_mode='none',
-            normalisation=True,
+            normalisation=False,
             scale='none',
             *args: Any,
             **kwargs: Any
