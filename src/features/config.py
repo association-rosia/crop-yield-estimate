@@ -1,10 +1,4 @@
-import os
-import sys
 from typing import Any
-from numbers import Number
-
-sys.path.append(os.curdir)
-
 from src.config import BaseConfig
 
 
