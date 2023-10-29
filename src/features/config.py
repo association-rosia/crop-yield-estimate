@@ -31,10 +31,10 @@ def check_normalisation(value: bool) -> bool:
     return value
 
 
-def check_fill_mode(value: str) -> str:
-    value_option = ['none', 'median', 'mean']
+def check_fillna(value: str) -> str:
+    value_option = [None, 'median', 'mean']
     if value not in value_option:
-        raise ValueError(f'fill_mode can be {", ".join(value_option)}, but found {value}')
+        raise ValueError(f'fillna can be {", ".join(value_option)}, but found {value}')
     
     return value
 
@@ -58,8 +58,8 @@ def check_limit_l(value):
 class CYEConfigPreProcessor(BaseConfig):
     def __init__(
             self,
-            delna_thr=1,
-            fill_mode='none',
+            delna_thr=0.5,
+            fillna=False,
             normalisation=False,
             scale='none',
             *args: Any,
@@ -68,7 +68,7 @@ class CYEConfigPreProcessor(BaseConfig):
         super().__init__()
 
         self.delna_thr = check_delna_thr(delna_thr)
-        self.fill_mode = check_fill_mode(fill_mode)
+        self.fillna = check_fillna(fillna)
         self.normalisation = check_normalisation(normalisation)
         self.scale = check_scale(scale)
 
