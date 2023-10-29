@@ -60,7 +60,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X = self.fill_correlated_cols(X)
         X = self.cyclical_date_encoding(X)
         X = self.one_hot_encoding(X)
-        # corr_cols = self.get_correlated_cols(X) # only used for analysis
         X = self.delete_correlated_cols(X)
 
         return X
@@ -76,9 +75,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
         if self.config['fillna']:
-            # nan_columns_to_fill = (0 < nan_columns) & (nan_columns <= self.config['delna_thr'])
-            # self.to_fill_cols = nan_columns_to_fill[nan_columns_to_fill].index.tolist()
-            # self.compute_filling_values(X)
             self.imputer.fit(X)
 
         if self.config['normalisation']:
@@ -99,7 +95,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X = self.make_consistent(X)
 
         if self.config['fillna']:
-            # X = self.fill_numerical_columns(X)
             X = pd.DataFrame(self.imputer.transform(X), index=X.index, columns=X.columns)
             X = self.fix_nan_bias(X)
 
@@ -155,21 +150,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    # def get_correlated_cols(self, X: DataFrame) -> DataFrame:
-    #     corr_mat = X.corr()
-    #     corr_cols = []
-    #
-    #     for col in X.columns:
-    #         col_indexes = corr_mat.index[(corr_mat[col] > 0.9) | (corr_mat[col] < -0.9)].tolist()
-    #
-    #         for col_index in col_indexes:
-    #             if col != col_index:  # and col not in self.CORR_COLS and col_index not in self.CORR_COLS:
-    #                 corr_cols.append(sorted((col, col_index)))
-    #
-    #     corr_cols = sorted(corr_cols)
-    #
-    #     return corr_cols
-
     def delete_correlated_cols(self, X: DataFrame) -> DataFrame:
         to_del_cols = [col for col in X.columns if col in self.TO_DEL_COLS]
         X.drop(columns=to_del_cols, inplace=True)
@@ -180,25 +160,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X.drop(columns=self.to_del_cols, inplace=True)
 
         return X
-
-    # def fill_numerical_columns(self, X: DataFrame) -> DataFrame:
-    #     for col in self.to_fill_cols:
-    #         # All columns are not in Test dataset
-    #         if col in X.columns:
-    #             X[col] = X[col].fillna(self.to_fill_values[col])
-    #
-    #     return X
-
-    # def compute_filling_values(self, X: DataFrame):
-    #     for col in self.to_fill_cols:
-    #         if self.config['fill_mode'] == 'mean':
-    #             value = X[col].mean()
-    #         elif self.config['fill_mode'] == 'median':
-    #             value = X[col].median()
-    #         else:
-    #             raise NotImplementedError('Unknown filling mode')
-    #
-    #         self.to_fill_values[col] = value
 
     def scale_area_columns(self, X: DataFrame) -> DataFrame:
         X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config['scale']], axis='index')
@@ -231,17 +192,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def make_consistent(self, X: DataFrame) -> DataFrame:
-        """
-        Allows creating the columns that were not created during One Hot Encoding and initializes them to 0.
-        Allows deleting the columns created during One Hot Encoding that did not exist during the fit.
-        """
-        # missing_columns = [col for col in self.out_columns if col not in X.columns]
-        # extra_columns = [col for col in X.columns if col not in self.out_columns]
-        #
-        # for col in missing_columns:
-        #     X[col] = 0
-        #
-        # X.drop(columns=extra_columns, inplace=True)
         X = X[self.out_columns]
 
         return X
