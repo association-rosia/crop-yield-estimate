@@ -10,8 +10,8 @@ from src.config import BaseConfig
 class CYEConfigPreProcessor(BaseConfig):
     def __init__(
             self,
-            delna_thr=100,
-            fill_mode='none',
+            delna_thr=50,
+            fillna=False,
             normalisation=False,
             scale='none',
             *args: Any,
@@ -20,7 +20,7 @@ class CYEConfigPreProcessor(BaseConfig):
         super().__init__()
 
         self.delna_thr = delna_thr
-        self.fill_mode = fill_mode
+        self.fillna = fillna
         self.normalisation = normalisation
         self.scale = scale
 
