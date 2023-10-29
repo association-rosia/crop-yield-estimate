@@ -88,7 +88,7 @@ class LGBMConfig(BaseConfig):
                  colsample_bytree: float = None,
                  reg_lambda: float = None,
                  reg_alpha: float = None,
-                 gamma: float = None,
+                 verbose: int = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.metric = metric
@@ -101,7 +101,8 @@ class LGBMConfig(BaseConfig):
         self.colsample_bytree = colsample_bytree
         self.reg_lambda = reg_lambda
         self.reg_alpha = reg_alpha
-        self.gamma = gamma
+        self.verbose = verbose
+        self.n_jobs = -1
 
 
 class LCEConfig(BaseConfig):

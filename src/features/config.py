@@ -50,7 +50,7 @@ def check_limit_l(value):
 class CYEConfigPreProcessor(BaseConfig):
     def __init__(
             self,
-            delna_thr=0.5,
+            delna_thr=1,
             fillna=False,
             deloutliers=False,
             scale='none',
