@@ -10,6 +10,9 @@ from wandb.plot import confusion_matrix
 
 from sklearn.metrics import (
     mean_squared_error,
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    r2_score,
     accuracy_score,
     f1_score,
     precision_score,
@@ -51,7 +54,10 @@ def init_estimator(run_config: dict) -> RegressorMixin | ClassifierMixin:
 
 def regression_metrics(y_pred, y_true) -> dict:
     metrics = {
-        'reg/rmse': mean_squared_error(y_pred=y_pred, y_true=y_true, squared=False)
+        'reg/rmse': mean_squared_error(y_pred=y_pred, y_true=y_true, squared=False),
+        'reg/mae': mean_absolute_error(y_pred=y_pred, y_true=y_true),
+        'reg/mape': mean_absolute_percentage_error(y_pred=y_pred, y_true=y_true),
+        'reg/r2-score': r2_score(y_pred=y_pred, y_true=y_true)
     }
 
     return metrics

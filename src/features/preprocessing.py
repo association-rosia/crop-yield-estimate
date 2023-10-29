@@ -28,7 +28,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.unique_value_cols = []
         self.out_columns = []
         self.scaler = StandardScaler()
-        self.imputer = KNNImputer()
+        self.imputer = KNNImputer(keep_empty_features=True)
 
     def preprocess(self, X: DataFrame) -> DataFrame:
         X = X.copy(deep=True)
@@ -144,7 +144,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def delete_empty_columns(self, X: DataFrame) -> DataFrame:
-        X.drop(columns=self.to_del_cols, inplace=True)
+        to_del_cols = [col for col in X.columns if col in self.to_del_cols]
+        X.drop(columns=to_del_cols, inplace=True)
 
         return X
 
@@ -190,7 +191,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 class CYETargetTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, config: CYEConfigTransformer) -> None:
         super().__init__()
-
         self.config = config
         self.scaler = None
         self.acre = None
@@ -232,7 +232,6 @@ if __name__ == '__main__':
     from src.constants import get_constants
 
     cst = get_constants()
-
     config = CYEConfigPreProcessor(fillna=True, deloutliers=True)
     processor = CYEDataPreProcessor(config=config)
 
@@ -240,14 +239,26 @@ if __name__ == '__main__':
     # transformer = CYETargetTransformer(config=config)
     df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
-    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
-    # y_train = transformer.fit_transform(X_train, y_train)
-    X_train = processor.fit_transform(X_train)
-    # y_train = transformer.inverse_transform(y_train)
+    labels = create_labels(
+        y=df_train[cst.target_column],
+        acre=df_train['Acre'],
+        limit_h=5000,
+        limit_l=500,
+    )
 
-    # Test data
-    X_test = pd.read_csv(cst.file_data_test, index_col='ID')
-    # y_test = transformer.fit(X_test)
-    X_test = processor.transform(X_test)
+    df_train_l = df_train[labels == 0].copy(deep=True)
+    df_train_m = df_train[labels == 1].copy(deep=True)
+    df_train_h = df_train[labels == 2].copy(deep=True)
+
+    for df_train in [df_train_h]:
+        X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+        # y_train = transformer.fit_transform(X_train, y_train)
+        X_train = processor.fit_transform(X_train)
+        # y_train = transformer.inverse_transform(y_train)
+
+        # Test data
+        X_test = pd.read_csv(cst.file_data_test, index_col='ID')
+        # y_test = transformer.fit(X_test)
+        X_test = processor.transform(X_test)
 
     print()
