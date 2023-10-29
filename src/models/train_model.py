@@ -52,7 +52,7 @@ def main():
 
     
 
-def create_sweep(script_config: dict):
+def create_sweep(script_config: dict) -> str:
     # Load sweep config
     if script_config['task'] == 'regression':
         dir_config = 'regressors'
