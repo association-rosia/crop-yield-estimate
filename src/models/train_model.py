@@ -34,6 +34,7 @@ def main():
         dir_config = 'regressors'
     elif run_config['task'] == 'classification':
         dir_config = 'classifiers'
+
     path_sweep = os.path.join(cst.path_configs, dir_config, f'{run_config["estimator_name"].lower()}.yml')
     with open(path_sweep, 'r') as file:
         sweep = yaml.safe_load(file)
@@ -81,6 +82,7 @@ def launch_sweep(nb_agents: int, sweep_id: str):
 def train():
     # Init wandb run
     run = wandb.init()
+
     # Get run config as dict
     run_config = run.config.as_dict()
 

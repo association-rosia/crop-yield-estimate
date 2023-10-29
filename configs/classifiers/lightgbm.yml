@@ -2,7 +2,7 @@
 method: bayes
 
 metric:
-  name: cls/f1
+  name: cls/f1-score
   goal: maximize
 
 parameters:
@@ -35,10 +35,6 @@ parameters:
   fillna:
     distribution: categorical
     values: [True, False]
-
-  normalisation:
-    distribution: categorical
-    values: [ True, False ]
 
   scale:
     distribution: constant

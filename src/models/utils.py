@@ -16,8 +16,8 @@ from sklearn.metrics import (
     recall_score,
 )
 
-
 from src.constants import get_constants
+
 cst = get_constants()
 
 
@@ -30,8 +30,9 @@ def init_preprocessor(run_config: dict) -> CYEDataPreProcessor:
 
 def init_transformer(run_config: dict) -> CYETargetTransformer:
     config_transformer = CYEConfigTransformer(**run_config)
+    transformer = CYETargetTransformer(config_transformer)
 
-    return CYETargetTransformer(config_transformer)
+    return transformer
 
 
 def init_estimator(run_config: dict) -> RegressorMixin | ClassifierMixin:
@@ -52,14 +53,14 @@ def regression_metrics(y_pred, y_true) -> dict:
     metrics = {
         'reg/rmse': mean_squared_error(y_pred=y_pred, y_true=y_true, squared=False)
     }
-    
+
     return metrics
 
 
-def classication_metrics(y_pred, y_true) -> dict:
+def classification_metrics(y_pred, y_true) -> dict:
     metrics = {
         'cls/accuracy': accuracy_score(y_true=y_true, y_pred=y_pred, normalize=True),
-        'cls/f1': f1_score(y_true=y_true, y_pred=y_pred, average='macro'),
+        'cls/f1-score': f1_score(y_true=y_true, y_pred=y_pred, average='macro'),
         'cls/recall': recall_score(y_true=y_true, y_pred=y_pred, average='macro'),
         'cls/precision': precision_score(y_true=y_true, y_pred=y_pred, average='macro'),
         'cls/confusion_matrix': confusion_matrix(
@@ -67,9 +68,9 @@ def classication_metrics(y_pred, y_true) -> dict:
             preds=y_pred,
             class_names=['Low', 'Medium', 'High'],
             title='Confusion matrix',
-            )
+        )
     }
-    
+
     return metrics
 
 
@@ -82,7 +83,7 @@ def init_cross_validator(run_config: dict) -> StratifiedKFold | int:
         )
     else:
         cv = run_config['cv']
-        
+
     return cv
 
 
@@ -90,19 +91,20 @@ def init_evaluation_metrics(run_config: dict):
     if run_config['task'] in ['regression', 'reg_l', 'reg_m', 'reg_h']:
         evaluation_metrics = regression_metrics
     elif run_config['task'] == 'classification':
-        evaluation_metrics = classication_metrics
-    
+        evaluation_metrics = classification_metrics
+
     return evaluation_metrics
 
 
 def get_test_data() -> DataFrame:
     df_test = pd.read_csv(cst.file_data_test, index_col='ID')
-    
+
     return df_test
 
 
 def get_train_data(run_config: dict) -> DataFrame:
     df_train = pd.read_csv(cst.file_data_train, index_col='ID')
+
     if run_config['task'] in ['reg_h', 'reg_m', 'reg_l']:
         labels = create_labels(
             y=df_train[cst.target_column],
@@ -110,12 +112,12 @@ def get_train_data(run_config: dict) -> DataFrame:
             limit_h=run_config['limit_h'],
             limit_l=run_config['limit_l'],
         )
-        
+
         if run_config['task'] == 'reg_l':
             df_train = df_train[labels == 0].copy(deep=True)
         elif run_config['task'] == 'reg_m':
             df_train = df_train[labels == 1].copy(deep=True)
         elif run_config['task'] == 'reg_h':
             df_train = df_train[labels == 2].copy(deep=True)
-            
+
     return df_train

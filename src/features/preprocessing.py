@@ -79,9 +79,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         if self.config.fillna:
             self.imputer.fit(X)
 
-        if self.config.normalisation:
-            self.scaler.fit(X)
-
         self.get_unique_value_cols(X)
 
         self.out_columns = X.columns.tolist()
@@ -99,9 +96,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         if self.config.fillna:
             X = pd.DataFrame(self.imputer.transform(X), index=X.index, columns=X.columns)
             X = self.fix_nan_bias(X)
-
-        if self.config.normalisation:
-            X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
 
         X = self.delete_unique_value_cols(X)
         X = self.delete_empty_columns(X)
@@ -125,8 +119,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
     def fill_correlated_cols(self, X: DataFrame) -> DataFrame:
         for col1, col2 in self.CORR_LIST_COLS:
-            X.loc[X[col2] == 0, col1] = 0
-            X.drop(columns=col2, inplace=True)
+            if col1 in X.columns and col2 in X.columns:
+                X.loc[X[col2] == 0, col1] = 0
+                X.drop(columns=col2, inplace=True)
 
         return X
 

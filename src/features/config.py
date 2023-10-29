@@ -12,7 +12,7 @@ def check_scale(value: str) -> str:
     value_option = ['none', 'Acre', 'CultLand', 'CropCultLand']
     if value not in value_option:
         raise ValueError(f'scale can be {", ".join(value_option)}, but found {value}')
-    
+
     return value
 
 
@@ -20,46 +20,37 @@ def check_task(value: str) -> str:
     value_option = ['regression', 'classification', 'reg_l', 'reg_m', 'reg_h']
     if value not in value_option:
         raise ValueError(f'task can be {", ".join(value_option)}, but found {value}')
-    
-    return value
 
-
-def check_normalisation(value: bool) -> bool:
-    if not isinstance(value, bool):
-        raise ValueError(f'normalisation must be a boolean, but found {type(value)}')
-    
     return value
 
 
 def check_fillna(value: bool) -> str:
     if not isinstance(value, bool):
         raise ValueError(f'fillna must be a boolean, but found {type(value)}')
-    
+
     return value
 
 
 def check_delna_thr(value: float) -> float:
     if value > 1 or value < 0:
         raise ValueError(f'delna_thr must be between 0 and 1, but found {value}')
-    
+
     return value
 
 
 def check_limit_h(value):
-    
     return value
 
 
 def check_limit_l(value):
-    
     return value
+
 
 class CYEConfigPreProcessor(BaseConfig):
     def __init__(
             self,
             delna_thr=0.5,
             fillna=False,
-            normalisation=False,
             scale='none',
             *args: Any,
             **kwargs: Any
@@ -68,7 +59,6 @@ class CYEConfigPreProcessor(BaseConfig):
 
         self.delna_thr = check_delna_thr(delna_thr)
         self.fillna = check_fillna(fillna)
-        self.normalisation = check_normalisation(normalisation)
         self.scale = check_scale(scale)
 
 
@@ -89,7 +79,7 @@ class CYEConfigTransformer(BaseConfig):
         self.limit_h = check_limit_h(limit_h)
         self.limit_l = check_limit_l(limit_l)
         self.check_parameters()
-        
+
     def check_parameters(self):
         if self.task == 'classification':
             if self.scale != 'none':
