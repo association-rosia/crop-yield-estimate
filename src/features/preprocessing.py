@@ -40,21 +40,16 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     CORR_AREA_COLS = ['CultLand', 'CropCultLand', 'TransIrriCost', 'Ganaura',
                       'CropOrgFYM', 'Harv_hand_rent', 'BasalUrea', '1tdUrea', '2tdUrea']
 
-    def __init__(
-            self,
-            config: CYEConfigPreProcessor,
-    ) -> None:
+    def __init__(self, config: CYEConfigPreProcessor) -> None:
 
         self.config = config
-
         self.to_del_cols = []
         self.to_del_corr_cols = []
-        # self.to_fill_cols = []
         self.to_fill_values = {}
         self.unique_value_cols = []
         self.out_columns = []
         self.scaler = StandardScaler()
-        self.imputer = KNNImputer()
+        self.imputer = KNNImputer(keep_empty_features=True)
 
     def preprocess(self, X: DataFrame) -> DataFrame:
         X = X.copy(deep=True)
@@ -154,7 +149,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def delete_empty_columns(self, X: DataFrame) -> DataFrame:
-        X.drop(columns=self.to_del_cols, inplace=True)
+        to_del_cols = [col for col in X.columns if col in self.to_del_cols]
+        X.drop(columns=to_del_cols, inplace=True)
 
         return X
 
@@ -171,12 +167,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             if is_in:
                 X[col] = X[col].astype(int)
                 X[col] = np.where(X[col] > 0.5, 1, 0)
-
-        return X
-
-    def scale_area_columns(self, X: DataFrame) -> DataFrame:
-        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config.scale], axis='index')
-        X.drop(columns=self.config.scale, inplace=True)
 
         return X
 
@@ -203,7 +193,6 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 class CYETargetTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, config: CYEConfigTransformer) -> None:
         super().__init__()
-
         self.config = config
         self.scaler = None
         self.acre = None
@@ -232,7 +221,6 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
         return y
 
     def fit_transform(self, X: DataFrame, y: Series) -> Series:
-
         return self.fit(X, y).transform(y)
 
     def inverse_transform(self, y: Series) -> Series:
@@ -247,21 +235,33 @@ if __name__ == '__main__':
 
     cst = get_constants()
     
-    config = CYEConfigPreProcessor(fillna=True)
+    config = CYEConfigPreProcessor(fillna=True, delna_thr=0.5)
     processor = CYEDataPreProcessor(config=config)
 
     # config = CYEConfigTransformer(scale=scale)
     # transformer = CYETargetTransformer(config=config)
     df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
-    X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
-    # y_train = transformer.fit_transform(X_train, y_train)
-    X_train = processor.fit_transform(X_train)
-    # y_train = transformer.inverse_transform(y_train)
+    labels = create_labels(
+        y=df_train[cst.target_column],
+        acre=df_train['Acre'],
+        limit_h=5000,
+        limit_l=500,
+    )
 
-    # Test data
-    X_test = pd.read_csv(cst.file_data_test, index_col='ID')
-    # y_test = transformer.fit(X_test)
-    X_test = processor.transform(X_test)
+    df_train_l = df_train[labels == 0].copy(deep=True)
+    df_train_m = df_train[labels == 1].copy(deep=True)
+    df_train_h = df_train[labels == 2].copy(deep=True)
+
+    for df_train in [df_train_h]:
+        X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
+        # y_train = transformer.fit_transform(X_train, y_train)
+        X_train = processor.fit_transform(X_train)
+        # y_train = transformer.inverse_transform(y_train)
+
+        # Test data
+        X_test = pd.read_csv(cst.file_data_test, index_col='ID')
+        # y_test = transformer.fit(X_test)
+        X_test = processor.transform(X_test)
 
     print()
