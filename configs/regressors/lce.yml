@@ -28,9 +28,9 @@ parameters:
     min: 0
     max: 1
 
-  fill_mode:
+  fillna:
     distribution: categorical
-    values: [ 'none', 'median', 'mean' ]
+    values: [True, False]
 
   normalisation:
     distribution: categorical

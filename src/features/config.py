@@ -31,10 +31,9 @@ def check_normalisation(value: bool) -> bool:
     return value
 
 
-def check_fillna(value: str) -> str:
-    value_option = [None, 'median', 'mean']
-    if value not in value_option:
-        raise ValueError(f'fillna can be {", ".join(value_option)}, but found {value}')
+def check_fillna(value: bool) -> str:
+    if not isinstance(value, bool):
+        raise ValueError(f'fillna must be a boolean, but found {type(value)}')
     
     return value
 

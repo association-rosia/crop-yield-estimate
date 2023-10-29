@@ -69,11 +69,11 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
 
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             X = self.scale_area_columns(X)
 
-        nan_columns = X.isnull().sum() / len(X) * 100
-        nan_columns_to_delete = nan_columns > self.config['delna_thr']
+        nan_columns = X.isnull().sum() / len(X)
+        nan_columns_to_delete = nan_columns > self.config.delna_thr
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
         if self.config.fillna:
