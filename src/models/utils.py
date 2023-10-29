@@ -1,7 +1,10 @@
 from sklearn.base import RegressorMixin, ClassifierMixin
+from sklearn.model_selection import StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
-from src.models.custom_model import CustomEstimator
+from src.utils import create_labels
+from pandas import DataFrame
+import pandas as pd
 
 from wandb.plot import confusion_matrix
 
@@ -34,7 +37,7 @@ def init_transformer(run_config: dict) -> CYETargetTransformer:
 def init_estimator(run_config: dict) -> RegressorMixin | ClassifierMixin:
     estimator_name = run_config['estimator_name']
 
-    if run_config['task'] == 'regression':
+    if run_config['task'] in ['regression', 'reg_l', 'reg_m', 'reg_h']:
         estimators = cst.reg_estimators
     elif run_config['task'] == 'classification':
         estimators = cst.cls_estimators
@@ -69,10 +72,50 @@ def classication_metrics(y_pred, y_true) -> dict:
     
     return metrics
 
+
+def init_cross_validator(run_config: dict) -> StratifiedKFold | int:
+    if run_config['task'] == 'classification':
+        cv = StratifiedKFold(
+            n_splits=run_config['cv'],
+            shuffle=True,
+            random_state=run_config['random_state'],
+        )
+    else:
+        cv = run_config['cv']
+        
+    return cv
+
+
 def init_evaluation_metrics(run_config: dict):
-    if run_config['task'] == 'regression':
+    if run_config['task'] in ['regression', 'reg_l', 'reg_m', 'reg_h']:
         evaluation_metrics = regression_metrics
     elif run_config['task'] == 'classification':
         evaluation_metrics = classication_metrics
     
     return evaluation_metrics
+
+
+def get_test_data() -> DataFrame:
+    df_test = pd.read_csv(cst.file_data_test, index_col='ID')
+    
+    return df_test
+
+
+def get_train_data(run_config: dict) -> DataFrame:
+    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
+    if run_config['task'] in ['reg_h', 'reg_m', 'reg_l']:
+        labels = create_labels(
+            y=df_train[cst.target_column],
+            acre=df_train['Acre'],
+            limit_h=run_config['limit_h'],
+            limit_l=run_config['limit_l'],
+        )
+        
+        if run_config['task'] == 'reg_l':
+            df_train = df_train[labels == 0].copy(deep=True)
+        elif run_config['task'] == 'reg_m':
+            df_train = df_train[labels == 1].copy(deep=True)
+        elif run_config['task'] == 'reg_h':
+            df_train = df_train[labels == 2].copy(deep=True)
+            
+    return df_train

@@ -15,6 +15,7 @@ from src.constants import get_constants
 cst = get_constants()
 
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
+from src.utils import create_labels
 
 
 class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
@@ -216,14 +217,6 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
         self.config = config
         self.scaler = None
         self.acre = None
-        
-    def create_labels(self, y: Series) -> Series:
-        # 0: Low, 1: Middle, 2: Hight
-        target_by_acre = y / self.acre
-        y_h = target_by_acre > self.config.limit_h
-        y_h_m = target_by_acre > self.config.limit_l
-        
-        return y_h.astype(int) + y_h_m.astype(int)
 
     def fit(self, X: DataFrame, y: Series = None) -> Self:
         if self.config.scale != 'none':
@@ -239,7 +232,12 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
             y = y / self.scaler
             
         if self.config.task == 'classification':
-            y = self.create_labels(y)
+            y = create_labels(
+                y=y,
+                acre=self.acre,
+                limit_h=self.config.limit_h,
+                limit_l=self.config.limit_l,
+            )
 
         return y
 

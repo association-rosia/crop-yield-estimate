@@ -7,15 +7,15 @@ import yaml
 
 sys.path.append(os.curdir)
 
-import pandas as pd
-
 import wandb
 
 from src.models.utils import (
     init_preprocessor,
     init_estimator,
     init_transformer,
+    init_cross_validator,
     init_evaluation_metrics,
+    get_train_data,
 )
 
 from sklearn.model_selection import cross_val_predict
@@ -93,11 +93,16 @@ def train():
     # Init estimator
     estimator = init_estimator(run_config)
     
+    # Init cross-validator generator
+    cv = init_cross_validator(run_config)
+    
     # Init evaluation metrics
     evaluation_metrics = init_evaluation_metrics(run_config)
 
+    # Load train data
+    df_train = get_train_data(run_config)
+
     # Pre-process data
-    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     y_train = transformer.fit_transform(X_train, y_train)
     X_train = preprocessor.fit_transform(X_train)
@@ -107,7 +112,7 @@ def train():
         estimator=estimator,
         X=X_train.to_numpy(),
         y=y_train.to_numpy(),
-        cv=run_config['cv'],
+        cv=cv,
         n_jobs=-1,
     )
 

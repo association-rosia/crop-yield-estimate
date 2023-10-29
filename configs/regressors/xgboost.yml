@@ -18,6 +18,14 @@ parameters:
     distribution: constant
     value: 'regression'
 
+  limit_h:
+    distribution: constant
+    value: 5000
+
+  limit_l:
+    distribution: constant
+    value: 500
+
   # Preprocessing
   target_name:
     distribution: constant

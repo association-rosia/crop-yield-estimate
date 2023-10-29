@@ -10,7 +10,13 @@ from pandas import DataFrame, Series
 import wandb
 from wandb.apis.public import Run
 
-from src.models.utils import init_estimator, init_preprocessor, init_transformer
+from src.models.utils import (
+    init_estimator,
+    init_preprocessor,
+    init_transformer,
+    get_train_data,
+    get_test_data
+)
 
 from src.constants import get_constants
 
@@ -80,8 +86,10 @@ def predict(run_id) -> Series:
     # Init estimator
     estimator = init_estimator(run_config)
 
+    # Load train data
+    df_train = get_train_data(run_config)
+    
     # Pre-process Train data
-    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     y_train = transformer.fit_transform(X_train, y_train)
     X_train = preprocessor.fit_transform(X_train)
@@ -89,8 +97,10 @@ def predict(run_id) -> Series:
     # Train model
     estimator.fit(X=X_train.to_numpy(), y=y_train.to_numpy())
 
+    # Load test data
+    X_test = get_test_data()
+    
     # Pre-process Test data
-    X_test = pd.read_csv(cst.file_data_test, index_col='ID')
     transformer.fit(X_test)
     X_test = preprocessor.transform(X_test)
 

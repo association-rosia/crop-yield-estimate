@@ -18,6 +18,14 @@ parameters:
     distribution: constant
     value: 'classification'
 
+  limit_h:
+    distribution: constant
+    value: 5000
+
+  limit_l:
+    distribution: constant
+    value: 500
+
   # Preprocessing
   target_name:
     distribution: constant
@@ -39,14 +47,6 @@ parameters:
   scale:
     distribution: constant
     value: 'none'
-
-  limit_h:
-    distribution: constant
-    value: 5000
-
-  limit_l:
-    distribution: constant
-    value: 500
 
   # Model
   estimator_name:

@@ -17,7 +17,7 @@ def check_scale(value: str) -> str:
 
 
 def check_task(value: str) -> str:
-    value_option = ['regression', 'classification']
+    value_option = ['regression', 'classification', 'reg_l', 'reg_m', 'reg_h']
     if value not in value_option:
         raise ValueError(f'task can be {", ".join(value_option)}, but found {value}')
     
