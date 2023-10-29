@@ -13,4 +13,6 @@ dependencies:
       - matplotlib
       - xgboost
       - lightgbm
+      - catboost
       - umap-learn
+      
