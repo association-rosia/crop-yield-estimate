@@ -25,6 +25,13 @@ def check_fillna(value: bool) -> str:
     return value
 
 
+def check_deloutliers(value: bool) -> str:
+    if not isinstance(value, bool):
+        raise ValueError(f'fillna must be a boolean, but found {type(value)}')
+
+    return value
+
+
 def check_delna_thr(value: float) -> float:
     if value > 1 or value < 0:
         raise ValueError(f'delna_thr must be between 0 and 1, but found {value}')
@@ -45,6 +52,7 @@ class CYEConfigPreProcessor(BaseConfig):
             self,
             delna_thr=0.5,
             fillna=False,
+            deloutliers=False,
             scale='none',
             *args: Any,
             **kwargs: Any
@@ -53,6 +61,7 @@ class CYEConfigPreProcessor(BaseConfig):
 
         self.delna_thr = check_delna_thr(delna_thr)
         self.fillna = check_fillna(fillna)
+        self.deloutliers = check_deloutliers(deloutliers)
         self.scale = check_scale(scale)
 
 
@@ -80,7 +89,7 @@ class CYEConfigTransformer(BaseConfig):
                 raise ValueError(f'For {self.task} task, limit_h must be defined, found None.')
             if self.limit_l is None:
                 raise ValueError(f'For {self.task} task, limit_l must be defined, found None.')
-        
+
         if self.task == 'classififcation':
             if self.scale != 'none':
                 raise ValueError(f'For {self.task} task, scale must be equal to \'none\', found {self.scale}.')

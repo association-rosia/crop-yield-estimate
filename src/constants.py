@@ -33,12 +33,51 @@ class CYEConstants:
 
         self.target_column = 'Yield'
 
+        self.processor = self.init_processor_constants()
+        self.outliers_thr = self.init_outliers_thr()
         self.reg_estimators = self.init_reg_estimators()
-        
         self.cls_estimators = self.init_cls_estimators()
-        
-    
-    def init_reg_estimators(self):
+
+    @staticmethod
+    def init_processor_constants():
+        processor = {
+            'list_cols': ['LandPreparationMethod', 'NursDetFactor', 'TransDetFactor', 'OrgFertilizers',
+                          'CropbasalFerts', 'FirstTopDressFert'],
+            'date_cols': ['CropTillageDate', 'RcNursEstDate', 'SeedingSowingTransplanting', 'Harv_date',
+                          'Threshing_date'],
+            'cat_cols': ['District', 'Block', 'CropEstMethod', 'TransplantingIrrigationSource',
+                         'TransplantingIrrigationPowerSource', 'PCropSolidOrgFertAppMethod', 'MineralFertAppMethod',
+                         'MineralFertAppMethod.1', 'Harv_method', 'Threshing_method', 'Stubble_use'],
+            'corr_list_cols': [('Ganaura', 'OrgFertilizersGanaura'), ('BasalUrea', 'CropbasalFertsUrea'),
+                               ('1tdUrea', 'FirstTopDressFertUrea')],
+            'to_del_cols': ['Harv_methodmachine', 'OrgFertilizersJeevamrit', 'CropbasalFertsMoP',
+                            'FirstTopDressFertNPK', 'TransplantingIrrigationSourceWell',
+                            'TransplantingIrrigationPowerSourceSolar', 'Harv_dateYear2022', 'Harv_dateYear2023'],
+            'corr_area_cols': ['CultLand', 'CropCultLand', 'TransIrriCost', 'Ganaura', 'CropOrgFYM', 'Harv_hand_rent',
+                               'BasalUrea', '1tdUrea', '2tdUrea']
+        }
+
+        processor['cat_cols'] += [f'{col}Year' for col in processor['date_cols']]
+
+        return processor
+
+    @staticmethod
+    def init_outliers_thr():
+        outliers_thr = {
+            'CultLand': 200,
+            'CropCultLand': 200,
+            'SeedlingsPerPit': 20,
+            'TransplantingIrrigationHours': 1000,
+            'TransIrriCost': 3000,
+            'Ganaura': 900,
+            '1appDaysUrea': 65,
+            'Harv_dateDayOfYearSin': 0,
+        }
+
+        return outliers_thr
+
+    @staticmethod
+    def init_reg_estimators():
         reg_estimators = {
             'XGBoost': {
                 'config': XGBConfig,
@@ -53,11 +92,11 @@ class CYEConstants:
             #     'estimator': LCERegressor
             # }
         }
-        
+
         return reg_estimators
-    
-    
-    def init_cls_estimators(self):
+
+    @staticmethod
+    def init_cls_estimators():
         cls_estimators = {
             'XGBoost': {
                 'config': XGBConfig,
@@ -68,7 +107,7 @@ class CYEConstants:
                 'estimator': LGBMClassifier
             },
         }
-        
+
         return cls_estimators
 
     @staticmethod

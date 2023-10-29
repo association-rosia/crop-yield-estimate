@@ -20,36 +20,10 @@ from src.utils import create_labels
 
 
 class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
-    LIST_COLS = ['LandPreparationMethod', 'NursDetFactor', 'TransDetFactor', 'OrgFertilizers',
-                 'CropbasalFerts', 'FirstTopDressFert']
-
-    DATE_COLS = ['CropTillageDate', 'RcNursEstDate', 'SeedingSowingTransplanting', 'Harv_date', 'Threshing_date']
-
-    CAT_COLS = ['District', 'Block', 'CropEstMethod', 'TransplantingIrrigationSource',
-                'TransplantingIrrigationPowerSource', 'PCropSolidOrgFertAppMethod', 'MineralFertAppMethod',
-                'MineralFertAppMethod.1', 'Harv_method', 'Threshing_method', 'Stubble_use'] + \
-               [f'{col}Year' for col in DATE_COLS]
-
-    CORR_LIST_COLS = [('Ganaura', 'OrgFertilizersGanaura'), ('BasalUrea', 'CropbasalFertsUrea'),
-                      ('1tdUrea', 'FirstTopDressFertUrea')]
-
-    TO_DEL_COLS = ['Harv_methodmachine', 'OrgFertilizersJeevamrit', 'CropbasalFertsMoP', 'FirstTopDressFertNPK',
-                   'TransplantingIrrigationSourceWell', 'TransplantingIrrigationPowerSourceSolar', 'Harv_dateYear2022',
-                   'Harv_dateYear2023']
-
-    CORR_AREA_COLS = ['CultLand', 'CropCultLand', 'TransIrriCost', 'Ganaura',
-                      'CropOrgFYM', 'Harv_hand_rent', 'BasalUrea', '1tdUrea', '2tdUrea']
-
-    def __init__(
-            self,
-            config: CYEConfigPreProcessor,
-    ) -> None:
-
+    def __init__(self, config: CYEConfigPreProcessor) -> None:
         self.config = config
-
         self.to_del_cols = []
         self.to_del_corr_cols = []
-        # self.to_fill_cols = []
         self.to_fill_values = {}
         self.unique_value_cols = []
         self.out_columns = []
@@ -63,50 +37,35 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         X = self.cyclical_date_encoding(X)
         X = self.one_hot_encoding(X)
         X = self.delete_correlated_cols(X)
+        X = self.delete_outliers(X)
 
         return X
 
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
-
-        if self.config.scale != 'none':
-            X = self.scale_area_columns(X)
-
-        nan_columns = X.isnull().sum() / len(X)
-        nan_columns_to_delete = nan_columns > self.config.delna_thr
-        self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
-
-        if self.config.fillna:
-            self.imputer.fit(X)
-
+        self.get_to_del_cols(X)
+        self.fit_imputer(X)
         self.get_unique_value_cols(X)
-
         self.out_columns = X.columns.tolist()
 
         return self
 
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.preprocess(X)
-
-        if self.config.scale != 'none':
-            X = self.scale_area_columns(X)
-
+        X = self.scale_area_columns(X)
         X = self.make_consistent(X)
-
-        if self.config.fillna:
-            X = pd.DataFrame(self.imputer.transform(X), index=X.index, columns=X.columns)
-            X = self.fix_nan_bias(X)
-
+        X = self.fill_missing_values(X)
         X = self.delete_unique_value_cols(X)
         X = self.delete_empty_columns(X)
 
         return X
 
     def fit_transform(self, X: DataFrame, y=None, **fit_params) -> DataFrame:
-        return self.fit(X, **fit_params).transform(X)
+        return self.fit(X).transform(X)
 
-    def one_hot_list(self, X: DataFrame) -> DataFrame:
-        for col in self.LIST_COLS:
+    @staticmethod
+    def one_hot_list(X: DataFrame) -> DataFrame:
+        for col in cst.processor['list_cols']:
             split_col = X[col].str.split().explode()
             split_col = pd.get_dummies(split_col, prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
             split_col = split_col.astype(np.uint8).groupby(level=0).max()
@@ -117,16 +76,31 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def fill_correlated_cols(self, X: DataFrame) -> DataFrame:
-        for col1, col2 in self.CORR_LIST_COLS:
+    @staticmethod
+    def fill_correlated_cols(X: DataFrame) -> DataFrame:
+        for col1, col2 in cst.processor['corr_list_cols']:
             if col1 in X.columns and col2 in X.columns:
                 X.loc[X[col2] == 0, col1] = 0
                 X.drop(columns=col2, inplace=True)
 
         return X
 
-    def cyclical_date_encoding(self, X: DataFrame) -> DataFrame:
-        for col in self.DATE_COLS:
+    def get_to_del_cols(self, X: DataFrame) -> DataFrame:
+        nan_columns = X.isnull().sum() / len(X)
+        nan_columns_to_delete = nan_columns > self.config.delna_thr
+        self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
+
+        return self
+
+    def fit_imputer(self, X: DataFrame) -> DataFrame:
+        if self.config.fillna:
+            self.imputer.fit(X)
+
+        return self
+
+    @staticmethod
+    def cyclical_date_encoding(X: DataFrame) -> DataFrame:
+        for col in cst.processor['date_cols']:
             X[col] = pd.to_datetime(X[col])
             X[f'{col}Year'] = X[col].dt.year.astype('string').str[:4]
             X[f'{col}DayOfYear'] = X[col].dt.dayofyear
@@ -136,8 +110,9 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def one_hot_encoding(self, X: DataFrame) -> DataFrame:
-        for col in self.CAT_COLS:
+    @staticmethod
+    def one_hot_encoding(X: DataFrame) -> DataFrame:
+        for col in cst.processor['cat_cols']:
             ohe_col = pd.get_dummies(X[col], prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
             ohe_col = ohe_col.rename(columns={f'{col}<NA>': f'{col}nan'}).astype(np.uint8)
             ohe_col.loc[ohe_col[f'{col}nan'] == 1] = np.nan
@@ -147,8 +122,23 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def delete_correlated_cols(self, X: DataFrame) -> DataFrame:
-        to_del_cols = [col for col in X.columns if col in self.TO_DEL_COLS]
+    def delete_outliers(self, X: DataFrame) -> DataFrame:
+        if self.config.deloutliers:
+            for col in cst.outliers_thr:
+                X = X[(X[col] <= cst.outliers_thr[col]) | (X[col].isna())]
+
+        return X
+
+    def fill_missing_values(self, X: DataFrame) -> DataFrame:
+        if self.config.fillna:
+            X = pd.DataFrame(self.imputer.transform(X), index=X.index, columns=X.columns)
+            X = self.fix_nan_bias(X)
+
+        return X
+
+    @staticmethod
+    def delete_correlated_cols(X: DataFrame) -> DataFrame:
+        to_del_cols = [col for col in X.columns if col in cst.processor['to_del_cols']]
         X.drop(columns=to_del_cols, inplace=True)
 
         return X
@@ -159,24 +149,19 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def scale_area_columns(self, X: DataFrame) -> DataFrame:
-        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config.scale], axis='index')
-        X.drop(columns=self.config.scale, inplace=True)
+        if self.config.scale != 'none':
+            X.loc[:, cst.processor['corr_area_cols']] = X[cst.processor['corr_area_cols']].divide(X[self.config.scale], axis='index')
+            X.drop(columns=self.config.scale, inplace=True)
 
         return X
 
     def fix_nan_bias(self, X: DataFrame) -> DataFrame:
         for col in X.columns:
-            is_in = sum([1 if cl_col in col else 0 for cl_col in self.CAT_COLS + self.LIST_COLS])
+            is_in = sum([1 if cl_col in col else 0 for cl_col in cst.processor['cat_cols'] + cst.processor['list_cols']])
 
             if is_in:
                 X[col] = X[col].astype(int)
                 X[col] = np.where(X[col] > 0.5, 1, 0)
-
-        return X
-
-    def scale_area_columns(self, X: DataFrame) -> DataFrame:
-        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config.scale], axis='index')
-        X.drop(columns=self.config.scale, inplace=True)
 
         return X
 
@@ -188,6 +173,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
             if num_unique_values - substract_value == 1:
                 self.unique_value_cols.append(col)
+
+        return self
 
     def delete_unique_value_cols(self, X: DataFrame) -> DataFrame:
         X.drop(columns=self.unique_value_cols, inplace=True)
@@ -211,16 +198,16 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame, y: Series = None) -> Self:
         if self.config.scale != 'none':
             self.scaler = X[self.config.scale].copy(deep=True)
-            
+
         if self.config.task == 'classification':
             self.acre = X['Acre'].copy(deep=True)
-            
+
         return self
 
     def transform(self, y: Series) -> Series:
         if self.config.scale != 'none':
             y = y / self.scaler
-            
+
         if self.config.task == 'classification':
             y = create_labels(
                 y=y,
@@ -231,8 +218,7 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
 
         return y
 
-    def fit_transform(self, X: DataFrame, y: Series) -> Series:
-
+    def fit_transform(self, X: DataFrame, y: Series = None, **fit_params) -> Series:
         return self.fit(X, y).transform(y)
 
     def inverse_transform(self, y: Series) -> Series:
@@ -246,8 +232,8 @@ if __name__ == '__main__':
     from src.constants import get_constants
 
     cst = get_constants()
-    
-    config = CYEConfigPreProcessor(fillna=True)
+
+    config = CYEConfigPreProcessor(fillna=True, deloutliers=True)
     processor = CYEDataPreProcessor(config=config)
 
     # config = CYEConfigTransformer(scale=scale)
