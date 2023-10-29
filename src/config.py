@@ -102,6 +102,7 @@ class LGBMConfig(BaseConfig):
         self.reg_lambda = reg_lambda
         self.reg_alpha = reg_alpha
         self.verbose = verbose
+        self.n_jobs = -1
 
 
 class LCEConfig(BaseConfig):
