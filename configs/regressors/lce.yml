@@ -19,10 +19,6 @@ parameters:
     value: 'regression'
 
   # Preprocessing
-  target_name:
-    distribution: constant
-    value: 'Yield'
-
   delna_thr:
     distribution: uniform
     min: 0

@@ -115,7 +115,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         for col in self.LIST_COLS:
             split_col = X[col].str.split().explode()
             split_col = pd.get_dummies(split_col, prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
-            split_col = split_col.astype(int).groupby(level=0).max()
+            split_col = split_col.astype(np.uint8).groupby(level=0).max()
             split_col.loc[split_col[f'{col}nan'] == 1] = np.nan
             split_col.drop(columns=f'{col}nan', inplace=True)
             X = X.join(split_col)
@@ -144,7 +144,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def one_hot_encoding(self, X: DataFrame) -> DataFrame:
         for col in self.CAT_COLS:
             ohe_col = pd.get_dummies(X[col], prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
-            ohe_col.rename(columns={f'{col}<NA>': f'{col}nan'}, inplace=True)
+            ohe_col = ohe_col.rename(columns={f'{col}<NA>': f'{col}nan'}).astype(np.uint8)
             ohe_col.loc[ohe_col[f'{col}nan'] == 1] = np.nan
             ohe_col.drop(columns=f'{col}nan', inplace=True)
             X = X.join(ohe_col)

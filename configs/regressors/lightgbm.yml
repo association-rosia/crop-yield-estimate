@@ -27,10 +27,6 @@ parameters:
     value: 500
 
   # Preprocessing
-  target_name:
-    distribution: constant
-    value: 'Yield'
-
   delna_thr:
     distribution: uniform
     min: 0
@@ -102,6 +98,6 @@ parameters:
     min: 0
     max: 50
 
-  verbosity:
+  verbose:
     distribution: constant
     value: -1

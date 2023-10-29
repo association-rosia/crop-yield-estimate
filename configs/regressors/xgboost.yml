@@ -27,10 +27,6 @@ parameters:
     value: 500
 
   # Preprocessing
-  target_name:
-    distribution: constant
-    value: 'Yield'
-
   delna_thr:
     distribution: uniform
     min: 0
