@@ -16,6 +16,7 @@ from src.constants import get_constants
 cst = get_constants()
 
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
+from src.utils import create_labels
 
 
 class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
@@ -44,7 +45,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             config: CYEConfigPreProcessor,
     ) -> None:
 
-        self.config = config.get_params()
+        self.config = config
+
         self.to_del_cols = []
         self.to_del_corr_cols = []
         # self.to_fill_cols = []
@@ -67,17 +69,17 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
 
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             X = self.scale_area_columns(X)
 
-        nan_columns = X.isnull().sum() / len(X) * 100
-        nan_columns_to_delete = nan_columns > self.config['delna_thr']
+        nan_columns = X.isnull().sum() / len(X)
+        nan_columns_to_delete = nan_columns > self.config.delna_thr
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
-        if self.config['fillna']:
+        if self.config.fillna:
             self.imputer.fit(X)
 
-        if self.config['normalisation']:
+        if self.config.normalisation:
             self.scaler.fit(X)
 
         self.get_unique_value_cols(X)
@@ -89,16 +91,16 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.preprocess(X)
 
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             X = self.scale_area_columns(X)
 
         X = self.make_consistent(X)
 
-        if self.config['fillna']:
+        if self.config.fillna:
             X = pd.DataFrame(self.imputer.transform(X), index=X.index, columns=X.columns)
             X = self.fix_nan_bias(X)
 
-        if self.config['normalisation']:
+        if self.config.normalisation:
             X = pd.DataFrame(self.scaler.transform(X), index=X.index, columns=X.columns)
 
         X = self.delete_unique_value_cols(X)
@@ -113,7 +115,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         for col in self.LIST_COLS:
             split_col = X[col].str.split().explode()
             split_col = pd.get_dummies(split_col, prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
-            split_col = split_col.astype(int).groupby(level=0).max()
+            split_col = split_col.astype(np.uint8).groupby(level=0).max()
             split_col.loc[split_col[f'{col}nan'] == 1] = np.nan
             split_col.drop(columns=f'{col}nan', inplace=True)
             X = X.join(split_col)
@@ -142,7 +144,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def one_hot_encoding(self, X: DataFrame) -> DataFrame:
         for col in self.CAT_COLS:
             ohe_col = pd.get_dummies(X[col], prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
-            ohe_col.rename(columns={f'{col}<NA>': f'{col}nan'}, inplace=True)
+            ohe_col = ohe_col.rename(columns={f'{col}<NA>': f'{col}nan'}).astype(np.uint8)
             ohe_col.loc[ohe_col[f'{col}nan'] == 1] = np.nan
             ohe_col.drop(columns=f'{col}nan', inplace=True)
             X = X.join(ohe_col)
@@ -162,8 +164,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def scale_area_columns(self, X: DataFrame) -> DataFrame:
-        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config['scale']], axis='index')
-        X.drop(columns=self.config['scale'], inplace=True)
+        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config.scale], axis='index')
+        X.drop(columns=self.config.scale, inplace=True)
 
         return X
 
@@ -174,6 +176,12 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
             if is_in:
                 X[col] = X[col].astype(int)
                 X[col] = np.where(X[col] > 0.5, 1, 0)
+
+        return X
+
+    def scale_area_columns(self, X: DataFrame) -> DataFrame:
+        X.loc[:, self.CORR_AREA_COLS] = X[self.CORR_AREA_COLS].divide(X[self.config.scale], axis='index')
+        X.drop(columns=self.config.scale, inplace=True)
 
         return X
 
@@ -201,18 +209,30 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, config: CYEConfigTransformer) -> None:
         super().__init__()
 
-        self.config = config.__dict__
+        self.config = config
         self.scaler = None
+        self.acre = None
 
     def fit(self, X: DataFrame, y: Series = None) -> Self:
-        if self.config['scale'] != 'none':
-            self.scaler = X[self.config['scale']].copy(deep=True)
-
+        if self.config.scale != 'none':
+            self.scaler = X[self.config.scale].copy(deep=True)
+            
+        if self.config.task == 'classification':
+            self.acre = X['Acre'].copy(deep=True)
+            
         return self
 
     def transform(self, y: Series) -> Series:
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             y = y / self.scaler
+            
+        if self.config.task == 'classification':
+            y = create_labels(
+                y=y,
+                acre=self.acre,
+                limit_h=self.config.limit_h,
+                limit_l=self.config.limit_l,
+            )
 
         return y
 
@@ -221,7 +241,7 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
         return self.fit(X, y).transform(y)
 
     def inverse_transform(self, y: Series) -> Series:
-        if self.config['scale'] != 'none':
+        if self.config.scale != 'none':
             y = y * self.scaler
 
         return y

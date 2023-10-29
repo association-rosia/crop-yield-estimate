@@ -2,8 +2,8 @@
 method: bayes
 
 metric:
-  name: rmse/avg
-  goal: minimize
+  name: cls/f1
+  goal: maximize
 
 parameters:
   random_state:
@@ -14,27 +14,35 @@ parameters:
     distribution: constant
     value: 5
 
-  # Preprocessing
-  target_name:
+  task:
     distribution: constant
-    value: 'Yield'
+    value: 'classification'
 
+  limit_h:
+    distribution: constant
+    value: 5000
+
+  limit_l:
+    distribution: constant
+    value: 500
+
+  # Preprocessing
   delna_thr:
     distribution: uniform
     min: 0
     max: 1
 
-  fill_mode:
+  fillna:
     distribution: categorical
-    values: [ 'none', 'median', 'mean' ]
+    values: [True, False]
 
   normalisation:
     distribution: categorical
     values: [ True, False ]
 
   scale:
-    distribution: categorical
-    values: [ 'none', 'Acre', 'CultLand', 'CropCultLand' ]
+    distribution: constant
+    value: 'none'
 
   # Model
   estimator_name:
@@ -43,7 +51,7 @@ parameters:
 
   eval_metric:
     distribution: constant
-    value: 'rmse'
+    value: 'logloss'
 
   n_estimators:
     distribution: int_uniform
