@@ -44,6 +44,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
     def fit(self, X: DataFrame) -> Self:
         X = self.preprocess(X)
         self.get_to_del_cols(X)
+        X = self.scale_area_columns(X)
         self.fit_imputer(X)
         self.get_unique_value_cols(X)
         self.out_columns = X.columns.tolist()
