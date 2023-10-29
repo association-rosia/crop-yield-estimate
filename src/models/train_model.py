@@ -27,15 +27,39 @@ cst = get_constants()
 
 def main():
     # Configure & Start run
-    run_config = parse_args()
+    script_config = parse_args()
+    
+    if script_config['debug']:
+        wandb.init(
+            config=os.path.join(cst.path_configs, 'debug-config.yml'),
+            entity=cst.entity,
+            project=cst.project,
+        )
+        train()
+    else:
+        sweep_id = create_sweep(script_config)
+        # Launch sweep
+        if script_config['dry']:
+            wandb.agent(
+                sweep_id=sweep_id,
+                function=train,
+                entity=cst.entity,
+                project=cst.project,
+                count=3
+            )
+        else:
+            launch_sweep(nb_agents=script_config['nb_agents'], sweep_id=sweep_id)
 
+    
+
+def create_sweep(script_config: dict) -> str:
     # Load sweep config
-    if run_config['task'] == 'regression':
+    if script_config['task'] == 'regression':
         dir_config = 'regressors'
-    elif run_config['task'] == 'classification':
+    elif script_config['task'] == 'classification':
         dir_config = 'classifiers'
 
-    path_sweep = os.path.join(cst.path_configs, dir_config, f'{run_config["estimator_name"].lower()}.yml')
+    path_sweep = os.path.join(cst.path_configs, dir_config, f'{script_config["estimator_name"].lower()}.yml')
     with open(path_sweep, 'r') as file:
         sweep = yaml.safe_load(file)
 
@@ -45,18 +69,8 @@ def main():
         entity=cst.entity,
         project=cst.project,
     )
-
-    # Launch sweep
-    if run_config['dry']:
-        wandb.agent(
-            sweep_id=sweep_id,
-            function=train,
-            entity=cst.entity,
-            project=cst.project,
-            count=3
-        )
-    else:
-        launch_sweep(nb_agents=run_config['nb_agents'], sweep_id=sweep_id)
+    
+    return sweep_id
 
 
 def launch_sweep(nb_agents: int, sweep_id: str):
@@ -137,9 +151,11 @@ def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
+    parser.add_argument('--debug', action='store_true', default=False, help='Run a single training using debug-config.yml (for debug purpose)')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'], help='Estimator to use')
     parser.add_argument('--task', type=str, default='regression', choices=['classification', 'regression'], help='Task to be performed')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
+    
     return parser.parse_args().__dict__
 
 

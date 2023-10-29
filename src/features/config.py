@@ -1,10 +1,4 @@
-import os
-import sys
 from typing import Any
-from numbers import Number
-
-sys.path.append(os.curdir)
-
 from src.config import BaseConfig
 
 
@@ -81,10 +75,12 @@ class CYEConfigTransformer(BaseConfig):
         self.check_parameters()
 
     def check_parameters(self):
-        if self.task == 'classification':
-            if self.scale != 'none':
-                raise ValueError(f'For classification task, scale must be equal to \'none\', found {self.scale}.')
+        if self.task in ['classification', 'reg_l', 'reg_m', 'reg_h']:
             if self.limit_h is None:
-                raise ValueError(f'For classification task, limit_h must be defined, found None.')
+                raise ValueError(f'For {self.task} task, limit_h must be defined, found None.')
             if self.limit_l is None:
-                raise ValueError(f'For classification task, limit_l must be defined, found None.')
+                raise ValueError(f'For {self.task} task, limit_l must be defined, found None.')
+        
+        if self.task == 'classififcation':
+            if self.scale != 'none':
+                raise ValueError(f'For {self.task} task, scale must be equal to \'none\', found {self.scale}.')
