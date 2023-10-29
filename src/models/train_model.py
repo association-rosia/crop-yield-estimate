@@ -28,7 +28,7 @@ cst = get_constants()
 def main():
     # Configure & Start run
     script_config = parse_args()
-    
+
     if script_config['debug']:
         wandb.init(
             config=os.path.join(cst.path_configs, 'debug-config.yml'),
@@ -50,7 +50,6 @@ def main():
         else:
             launch_sweep(nb_agents=script_config['nb_agents'], sweep_id=sweep_id)
 
-    
 
 def create_sweep(script_config: dict) -> str:
     # Load sweep config
@@ -69,7 +68,7 @@ def create_sweep(script_config: dict) -> str:
         entity=cst.entity,
         project=cst.project,
     )
-    
+
     return sweep_id
 
 
@@ -108,10 +107,10 @@ def train():
 
     # Init estimator
     estimator = init_estimator(run_config)
-    
+
     # Init cross-validator generator
     cv = init_cross_validator(run_config)
-    
+
     # Init evaluation metrics
     evaluation_metrics = init_evaluation_metrics(run_config)
 
@@ -135,7 +134,7 @@ def train():
     # Compute RMSE
     y_pred = transformer.inverse_transform(y_pred)
     y_train = transformer.inverse_transform(y_train)
-    
+
     metrics = evaluation_metrics(y_pred=y_pred, y_true=y_train)
 
     # Log results
@@ -143,7 +142,7 @@ def train():
 
     # Finish run
     run.finish()
-    
+
     return True
 
 
@@ -151,11 +150,14 @@ def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-    parser.add_argument('--debug', action='store_true', default=False, help='Run a single training using debug-config.yml (for debug purpose)')
-    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'], help='Estimator to use')
-    parser.add_argument('--task', type=str, default='regression', choices=['classification', 'regression'], help='Task to be performed')
+    parser.add_argument('--debug', action='store_true', default=False,
+                        help='Run a single training using debug-config.yml (for debug purpose)')
+    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'],
+                        help='Estimator to use')
+    parser.add_argument('--task', type=str, default='regression', choices=['classification', 'regression'],
+                        help='Task to be performed')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
-    
+
     return parser.parse_args().__dict__
 
 
