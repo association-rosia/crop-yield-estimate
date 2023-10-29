@@ -85,14 +85,14 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_to_del_cols(self, X: DataFrame) -> DataFrame:
+    def get_to_del_cols(self, X: DataFrame) -> Self:
         nan_columns = X.isnull().sum() / len(X)
         nan_columns_to_delete = nan_columns > self.config.delna_thr
         self.to_del_cols = nan_columns_to_delete[nan_columns_to_delete].index.tolist()
 
         return self
 
-    def fit_imputer(self, X: DataFrame) -> DataFrame:
+    def fit_imputer(self, X: DataFrame) -> Self:
         if self.config.fillna:
             self.imputer.fit(X)
 
@@ -165,7 +165,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def get_unique_value_cols(self, X: DataFrame):
+    def get_unique_value_cols(self, X: DataFrame) -> Self:
         for col in X.columns:
             unique_values = X[col].unique().tolist()
             num_unique_values = len(unique_values)
