@@ -1,0 +1,77 @@
+random_state:
+  desc: Seed to use
+  value: 42
+
+cv:
+  desc: Number of split in cross-validation
+  value: 5
+
+task:
+  desc: Type of task applied
+  value: 'regression'
+
+limit_h:
+  desc: Upper limit to create classes
+  value: 5000
+
+limit_l:
+  desc: Lower limit to create classes
+  value: 500
+
+# Preprocessing
+delna_thr:
+  desc: Threshold of missiong values to delate columns
+  value: 0.5
+
+fillna:
+  desc: Fill or not nan values
+  value: True
+
+# Model
+estimator_name:
+  desc: model to use
+  value: 'LightGBM'
+
+metric:
+  desc: metric to evaluate the model
+  value: 'rmse'
+
+n_estimators:
+  desc: Number of estimators
+  value: 500
+
+learning_rate:
+  desc: Value of Learning rate
+  value: 0.001
+
+max_depth:
+  desc: Limit the max depth for tree model
+  value: 59
+
+min_data_in_leaf:
+  desc: Minimal number of data in one leaf
+  value: 50
+
+num_leaves:
+  desc: max number of leaves in one tree
+  value: 512
+
+subsample: # bagging_fraction
+  desc: This will randomly select part of data without resampling
+  value: 0.5
+
+colsample_bytree: # feature_fraction
+  desc: LightGBM will randomly select a subset of features on each iteration
+  value: 0.5
+
+reg_alpha:
+  desc: L1 regularization
+  value: 0
+
+reg_lambda:
+  desc: L2 regularization
+  value: 0
+
+verbose:
+  desc: Verbose of the model
+  value: -1
