@@ -61,7 +61,6 @@ def classification_strategy(df: DataFrame) -> Series:
 
 
 def mean_strategy(df: DataFrame) -> Series:
-    
     return df.mean(axis='columns')
 
 
@@ -137,7 +136,8 @@ def parse_args() -> dict:
                         help='ID of wandb run to use for submission. Give multiple IDs for ensemble submission.')
     
     parser.add_argument('--ensemble_strategy', type=str, default='mean', choices=['mean', 'classification'], 
-                        help='Ensemble strategy to use. If classification is choised, the task runs must be classification, reg_low, reg_medium, reg_high')
+                        help='Ensemble strategy to use. If classification is choised, the task runs must be '
+                             'classification, reg_low, reg_medium, reg_high')
 
     return parser.parse_args().__dict__
 
