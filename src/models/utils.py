@@ -3,8 +3,16 @@ from sklearn.model_selection import StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
 from src.utils import create_labels
-from pandas import DataFrame
+
 import pandas as pd
+from pandas import DataFrame, Series
+
+import numpy as np
+from numpy import ndarray
+
+from sklearn.model_selection import cross_val_predict
+from imblearn.over_sampling import SMOTE
+from imblearn.combine import SMOTEENN
 
 from wandb.plot import confusion_matrix
 
@@ -127,3 +135,34 @@ def get_train_data(run_config: dict) -> DataFrame:
             df_train = df_train[labels == 2].copy(deep=True)
 
     return df_train
+
+
+def apply_smote(X, y) -> (DataFrame, Series):
+    k_neighbors = np.unique(y, return_counts=True)[1][2] - 1
+    smote = SMOTE(k_neighbors=k_neighbors)
+    smoteenn = SMOTEENN(smote=smote)
+    X, y = smoteenn.fit_resample(X, y)
+
+    return X, y
+
+
+def smote_cross_val_predict(estimator, X, y, cv, n_jobs) -> ndarray:
+    y_pred = np.zeros(shape=y.shape)
+
+    for train_idx, val_idx in cv.split(X, y):
+        X_train, y_train = X[train_idx], y[train_idx]
+        X_val = X[val_idx]
+        X, y = apply_smote(X, y)
+        estimator.fit(X_train, y_train)
+        y_pred[val_idx] = estimator.predict(X_val)
+
+    return y_pred
+
+
+def init_trainer(run_config: dict):
+    if run_config['data_aug'] == 'smote':
+        trainer = smote_cross_val_predict
+    else:
+        trainer = cross_val_predict
+
+    return trainer

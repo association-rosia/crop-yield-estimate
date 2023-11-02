@@ -3,6 +3,7 @@ import os
 import sys
 from multiprocessing import Process
 
+import numpy as np
 import yaml
 
 sys.path.append(os.curdir)
@@ -16,9 +17,8 @@ from src.models.utils import (
     init_cross_validator,
     init_evaluation_metrics,
     get_train_data,
+    init_trainer
 )
-
-from sklearn.model_selection import cross_val_predict
 
 from src.constants import get_constants
 
@@ -115,7 +115,7 @@ def train():
     evaluation_metrics = init_evaluation_metrics(run_config)
 
     # Load train data
-    df_train = get_train_data(run_config)
+    df_train = get_train_data(run_config)  # for cls, the classes are calculate in transformer
 
     # Pre-process data
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
@@ -123,7 +123,8 @@ def train():
     X_train = preprocessor.fit_transform(X_train)
 
     # Cross-validate estimator
-    y_pred = cross_val_predict(
+    trainer = init_trainer(run_config)
+    y_pred = trainer(
         estimator=estimator,
         X=X_train.to_numpy(),
         y=y_train.to_numpy(),
@@ -134,7 +135,6 @@ def train():
     # Compute RMSE
     y_pred = transformer.inverse_transform(y_pred)
     y_train = transformer.inverse_transform(y_train)
-
     metrics = evaluation_metrics(y_pred=y_pred, y_true=y_train)
 
     # Log results
@@ -150,11 +150,11 @@ def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-    parser.add_argument('--debug', action='store_true', default=False,
+    parser.add_argument('--debug', action='store_true', default=True,
                         help='Run a single training using debug-config.yml (for debug purpose)')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'],
                         help='Estimator to use')
-    parser.add_argument('--task', type=str, default='regression', choices=['classification', 'regression'],
+    parser.add_argument('--task', type=str, default='classification', choices=['classification', 'regression'],
                         help='Task to be performed')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
 

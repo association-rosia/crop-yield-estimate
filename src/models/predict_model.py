@@ -15,7 +15,8 @@ from src.models.utils import (
     init_preprocessor,
     init_transformer,
     get_train_data,
-    get_test_data
+    get_test_data,
+    apply_smote
 )
 
 from src.constants import get_constants
@@ -60,7 +61,6 @@ def classification_strategy(df: DataFrame) -> Series:
 
 
 def mean_strategy(df: DataFrame) -> Series:
-    
     return df.mean(axis='columns')
 
 
@@ -95,6 +95,9 @@ def predict(run_id) -> Series:
     X_train = preprocessor.fit_transform(X_train)
 
     # Train model
+    if run_config['data_aug'] == 'smote':
+        X_train, y_train = apply_smote(X_train, y_train)
+
     estimator.fit(X=X_train.to_numpy(), y=y_train.to_numpy())
 
     # Load test data
@@ -133,7 +136,8 @@ def parse_args() -> dict:
                         help='ID of wandb run to use for submission. Give multiple IDs for ensemble submission.')
     
     parser.add_argument('--ensemble_strategy', type=str, default='mean', choices=['mean', 'classification'], 
-                        help='Ensemble strategy to use. If classification is choised, the task runs must be classification, reg_low, reg_medium, reg_high')
+                        help='Ensemble strategy to use. If classification is choised, the task runs must be '
+                             'classification, reg_low, reg_medium, reg_high')
 
     return parser.parse_args().__dict__
 
