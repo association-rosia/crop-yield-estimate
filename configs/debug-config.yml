@@ -6,9 +6,12 @@ cv:
   desc: Number of split in cross-validation
   value: 5
 
+smote:
+  value: True
+
 task:
   desc: Type of task applied
-  value: 'regression'
+  value: 'classification'
 
 limit_h:
   desc: Upper limit to create classes
@@ -30,11 +33,7 @@ fillna:
 # Model
 estimator_name:
   desc: model to use
-  value: 'LightGBM'
-
-metric:
-  desc: metric to evaluate the model
-  value: 'rmse'
+  value: 'XGBoost'
 
 n_estimators:
   desc: Number of estimators

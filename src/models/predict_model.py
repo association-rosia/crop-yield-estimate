@@ -15,7 +15,8 @@ from src.models.utils import (
     init_preprocessor,
     init_transformer,
     get_train_data,
-    get_test_data
+    get_test_data,
+    apply_smote
 )
 
 from src.constants import get_constants
@@ -95,6 +96,9 @@ def predict(run_id) -> Series:
     X_train = preprocessor.fit_transform(X_train)
 
     # Train model
+    if run_config['smote']:
+        X_train, y_train = apply_smote(X_train, y_train)
+
     estimator.fit(X=X_train.to_numpy(), y=y_train.to_numpy())
 
     # Load test data
