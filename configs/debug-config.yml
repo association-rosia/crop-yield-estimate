@@ -6,8 +6,8 @@ cv:
   desc: Number of split in cross-validation
   value: 5
 
-smote:
-  value: True
+data_aug:
+  value: 'smote'
 
 task:
   desc: Type of task applied

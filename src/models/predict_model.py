@@ -95,7 +95,7 @@ def predict(run_id) -> Series:
     X_train = preprocessor.fit_transform(X_train)
 
     # Train model
-    if run_config['smote']:
+    if run_config['data_aug'] == 'smote':
         X_train, y_train = apply_smote(X_train, y_train)
 
     estimator.fit(X=X_train.to_numpy(), y=y_train.to_numpy())

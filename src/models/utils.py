@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
 from src.utils import create_labels
-from pandas import DataFrame
+from pandas import DataFrame, Series
 import pandas as pd
 import numpy as np
 
@@ -48,7 +48,7 @@ def init_estimator(run_config: dict) -> RegressorMixin | ClassifierMixin:
 
     if run_config['task'] in ['regression', 'reg_l', 'reg_m', 'reg_h']:
         estimators = cst.reg_estimators
-    else:
+    elif run_config['task'] == 'classification':
         estimators = cst.cls_estimators
 
     estimator_config = estimators[estimator_name]['config'](**run_config).get_params()
@@ -134,7 +134,7 @@ def get_train_data(run_config: dict) -> DataFrame:
     return df_train
 
 
-def apply_smote(X, y):
+def apply_smote(X, y) -> (DataFrame, Series):
     k_neighbors = np.unique(y, return_counts=True)[1][2] - 1
     smote = SMOTE(k_neighbors=k_neighbors)
     smoteenn = SMOTEENN(smote=smote)
@@ -157,7 +157,7 @@ def smote_cross_val_predict(estimator, X, y, cv, n_jobs):
 
 
 def init_trainer(run_config: dict):
-    if run_config['smote']:
+    if run_config['data_aug'] == 'smote':
         trainer = smote_cross_val_predict
     else:
         trainer = cross_val_predict

@@ -150,11 +150,11 @@ def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-    parser.add_argument('--debug', action='store_true', default=True,
+    parser.add_argument('--debug', action='store_true', default=False,
                         help='Run a single training using debug-config.yml (for debug purpose)')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'],
                         help='Estimator to use')
-    parser.add_argument('--task', type=str, default='regression', choices=['classification', 'regression'],
+    parser.add_argument('--task', type=str, default='classification', choices=['classification', 'regression'],
                         help='Task to be performed')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
 
