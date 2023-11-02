@@ -3,9 +3,12 @@ from sklearn.model_selection import StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
 from src.utils import create_labels
-from pandas import DataFrame, Series
+
 import pandas as pd
+from pandas import DataFrame, Series
+
 import numpy as np
+from numpy import ndarray
 
 from sklearn.model_selection import cross_val_predict
 from imblearn.over_sampling import SMOTE
@@ -143,7 +146,7 @@ def apply_smote(X, y) -> (DataFrame, Series):
     return X, y
 
 
-def smote_cross_val_predict(estimator, X, y, cv, n_jobs):
+def smote_cross_val_predict(estimator, X, y, cv, n_jobs) -> ndarray:
     y_pred = np.zeros(shape=y.shape)
 
     for train_idx, val_idx in cv.split(X, y):

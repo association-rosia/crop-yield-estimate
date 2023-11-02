@@ -7,6 +7,7 @@ cv:
   value: 5
 
 data_aug:
+  desc: Data augmentation strategy
   value: 'smote'
 
 task:
