@@ -12,7 +12,7 @@ data_path = os.path.join(cst.path_interim_data, 'Train_GReaT.csv')
 data = pd.read_csv(data_path)
 
 llm = 'distilgpt2'
-great = GReaT(llm, epochs=200, experiment_dir=cst.path_models)
+great = GReaT(llm=llm, experiment_dir=cst.path_models, epochs=200, batch_size=256)
 
 great.fit(data)
 
