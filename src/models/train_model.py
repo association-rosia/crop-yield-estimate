@@ -3,7 +3,6 @@ import os
 import sys
 from multiprocessing import Process
 
-import numpy as np
 import yaml
 
 sys.path.append(os.curdir)

@@ -157,7 +157,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def fix_nan_bias(self, X: DataFrame) -> DataFrame:
+    @staticmethod
+    def fix_nan_bias(X: DataFrame) -> DataFrame:
         for col in X.columns:
             is_in = sum([1 if cl_col in col else 0 for cl_col in cst.processor['cat_cols'] + cst.processor['list_cols']])
 

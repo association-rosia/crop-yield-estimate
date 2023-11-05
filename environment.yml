@@ -15,4 +15,5 @@ dependencies:
       - lightgbm
       - catboost
       - umap-learn
+      - be-great
       

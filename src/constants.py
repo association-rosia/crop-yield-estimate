@@ -15,9 +15,10 @@ class CYEConstants:
 
     def __init__(self) -> None:
         # Paths to data directories
-        self.path_data = os.path.join('data', 'raw')
-        self.file_data_train = os.path.join(self.path_data, 'Train.csv')
-        self.file_data_test = os.path.join(self.path_data, 'Test.csv')
+        self.path_raw_data = os.path.join('data', 'raw')
+        self.path_interim_data = os.path.join('data', 'interim')
+        self.file_data_train = os.path.join(self.path_raw_data, 'Train.csv')
+        self.file_data_test = os.path.join(self.path_raw_data, 'Test.csv')
 
         # Paths for models and submissions
         self.path_models = 'models'
