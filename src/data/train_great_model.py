@@ -9,5 +9,11 @@ cst = get_constants()
 data_path = os.path.join(cst.path_interim_data, 'Train_GReaT.csv')
 data = pd.read_csv(data_path)
 
-great = GReaT('distilgpt2', epochs=200, experiment_dir=cst.path_models)
-trainer = great.fit(data)
+llm = 'distilgpt2'
+great = GReaT(llm, epochs=200, experiment_dir=cst.path_models)
+
+great.fit(data)
+
+os.makedirs(cst.path_models, exist_ok=True)
+save_path = os.path.join(cst.path_models, llm)
+great.save(save_path)
