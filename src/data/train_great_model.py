@@ -1,7 +1,9 @@
+import sys
 import os
 import pandas as pd
 from be_great import GReaT
 
+sys.path.append(os.curdir)
 from src.constants import get_constants
 
 cst = get_constants()
