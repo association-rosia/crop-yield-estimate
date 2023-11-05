@@ -16,6 +16,7 @@ from src.constants import get_constants
 cst = get_constants()
 
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
+from src.features.iterativeimputer import IterativeImputer
 from src.utils import create_labels
 
 
@@ -28,7 +29,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         self.unique_value_cols = []
         self.out_columns = []
         self.scaler = StandardScaler()
-        self.imputer = KNNImputer(keep_empty_features=True)
+        self.imputer = self.init_imputer(self.config.fillna)
 
     def preprocess(self, X: DataFrame) -> DataFrame:
         X = X.copy(deep=True)
@@ -63,6 +64,17 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
     def fit_transform(self, X: DataFrame, y=None, **fit_params) -> DataFrame:
         return self.fit(X).transform(X)
+    
+    @staticmethod
+    def init_imputer(imputer_name: str):
+        if imputer_name == 'KNNImputer':
+            imputer = KNNImputer(keep_empty_features=True)
+        elif imputer_name == 'IterativeImputer':
+            imputer = IterativeImputer()
+        elif imputer_name == 'none':
+            imputer = None
+            
+        return imputer
 
     @staticmethod
     def one_hot_list(X: DataFrame) -> DataFrame:
@@ -94,7 +106,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return self
 
     def fit_imputer(self, X: DataFrame) -> Self:
-        if self.config.fillna:
+        if self.config.fillna != 'none':
             self.imputer.fit(X)
 
         return self
@@ -131,7 +143,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def fill_missing_values(self, X: DataFrame) -> DataFrame:
-        if self.config.fillna:
+        if self.config.fillna != 'none':
             X = pd.DataFrame(self.imputer.transform(X), index=X.index, columns=X.columns)
             X = self.fix_nan_bias(X)
 
@@ -159,7 +171,7 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
     def fix_nan_bias(self, X: DataFrame) -> DataFrame:
         for col in X.columns:
-            is_in = sum([1 if cl_col in col else 0 for cl_col in cst.processor['cat_cols'] + cst.processor['list_cols']])
+            is_in = any([cl_col in col for cl_col in cst.processor['cat_cols'] + cst.processor['list_cols']])
 
             if is_in:
                 X[col] = X[col].astype(int)
@@ -230,10 +242,7 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
 
 
 if __name__ == '__main__':
-    from src.constants import get_constants
-
-    cst = get_constants()
-    config = CYEConfigPreProcessor(fillna=True, deloutliers=True)
+    config = CYEConfigPreProcessor(fillna='none', deloutliers=True)
     processor = CYEDataPreProcessor(config=config)
 
     # config = CYEConfigTransformer(scale=scale)
@@ -254,6 +263,7 @@ if __name__ == '__main__':
     for df_train in [df_train_h]:
         X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
         # y_train = transformer.fit_transform(X_train, y_train)
+        processor = CYEDataPreProcessor(config=config)
         X_train = processor.fit_transform(X_train)
         # y_train = transformer.inverse_transform(y_train)
 

@@ -15,4 +15,4 @@ dependencies:
       - lightgbm
       - catboost
       - umap-learn
-      
+      - imbalanced-learn      
