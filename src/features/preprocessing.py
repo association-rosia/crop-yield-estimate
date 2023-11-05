@@ -19,7 +19,7 @@ from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.utils import create_labels
 
 
-class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
+class CYEPreProcessor(BaseEstimator, TransformerMixin):
     def __init__(self, config: CYEConfigPreProcessor) -> None:
         self.config = config
         self.to_del_cols = []
@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     cst = get_constants()
     config = CYEConfigPreProcessor(fillna=True, deloutliers=True)
-    processor = CYEDataPreProcessor(config=config)
+    processor = CYEPreProcessor(config=config)
 
     # config = CYEConfigTransformer(scale=scale)
     # transformer = CYETargetTransformer(config=config)
