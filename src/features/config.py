@@ -18,9 +18,17 @@ def check_task(value: str) -> str:
     return value
 
 
-def check_fillna(value: bool) -> str:
-    if not isinstance(value, bool):
-        raise ValueError(f'fillna must be a boolean, but found {type(value)}')
+def check_fillna(value: str | bool) -> str:
+    value_option = ['none', 'KNNImputer', 'IterativeImputer']
+    
+    # Backward compatibility
+    if isinstance(value, bool) and value:
+        value = 'KNNImputer'
+    # Backward compatibility
+    elif isinstance(value, bool) and not value:
+        value = 'none'
+    elif value not in value_option:
+        raise ValueError(f'fillna can be {", ".join(value_option)}, but found {value}')
 
     return value
 
@@ -51,7 +59,7 @@ class CYEConfigPreProcessor(BaseConfig):
     def __init__(
             self,
             delna_thr=1,
-            fillna=False,
+            fillna='none',
             deloutliers=False,
             scale='none',
             *args: Any,
@@ -92,4 +100,4 @@ class CYEConfigTransformer(BaseConfig):
 
         if self.task == 'classififcation':
             if self.scale != 'none':
-                raise ValueError(f'For {self.task} task, scale must be equal to \'none\', found {self.scale}.')
+                raise ValueError(f'For {self.task} task, scale must be equal to \'none\', found {self.scale}.')        

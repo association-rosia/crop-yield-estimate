@@ -7,12 +7,12 @@ cv:
   value: 5
 
 data_aug:
-  desc: Data augmentation strategy
-  value: 'smote'
+  desc: Data augmentation strategy, 'smote'
+  value: 'none'
 
 task:
   desc: Type of task applied
-  value: 'classification'
+  value: 'regression'
 
 limit_h:
   desc: Upper limit to create classes
@@ -28,8 +28,8 @@ delna_thr:
   value: 0.5
 
 fillna:
-  desc: Fill or not nan values
-  value: True
+  desc: How to fill nan, 'none', 'KNNImputer', IterativeImputer
+  value: none
 
 # Model
 estimator_name:
