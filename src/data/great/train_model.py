@@ -13,8 +13,14 @@ os.environ['WANDB_PROJECT'] = 'crop-yield-estimate'
 data_path = os.path.join(cst.path_interim_data, 'TrainGReaT.csv')
 data = pd.read_csv(data_path)
 
-llm = 'DistilGPT2'
-great = GReaT(llm=llm.lower(), experiment_dir=cst.path_models, epochs=50, batch_size=128)
+llm = 'GPT2'
+great = GReaT(llm=llm.lower(),
+              experiment_dir=cst.path_models,
+              epochs=50,
+              batch_size=128,
+              efficient_finetuning='lora',
+              logging_steps=10,
+              )
 
 great.fit(data)
 
