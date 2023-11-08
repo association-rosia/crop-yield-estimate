@@ -13,7 +13,7 @@ load_path = os.path.join(cst.path_models, llm)
 great = GReaT.load_from_dir(load_path)
 
 n_samples = 1000
-samples = great.sample(n_samples=n_samples, max_length=1024)
+samples = great.sample(n_samples=n_samples, k=100, max_length=1024, device='cuda')
 
 now = int(time.time())
 save_path = os.path.join(cst.path_interim_data, f'{now}-GReaTSamples{llm}-{n_samples}.csv')
