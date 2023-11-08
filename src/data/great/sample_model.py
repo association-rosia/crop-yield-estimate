@@ -1,7 +1,6 @@
 import sys
 import os
 import time
-import pandas as pd
 from be_great import GReaT
 
 sys.path.append(os.curdir)
@@ -14,7 +13,7 @@ load_path = os.path.join(cst.path_models, llm)
 great = GReaT.load_from_dir(load_path)
 
 n_samples = 1000
-samples = great.sample(n_samples=n_samples, max_length=256)
+samples = great.sample(n_samples=n_samples, max_length=1024)
 
 now = int(time.time())
 save_path = os.path.join(cst.path_interim_data, f'{now}-GReaTSamples{llm}-{n_samples}.csv')
