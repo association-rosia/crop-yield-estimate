@@ -14,7 +14,7 @@ great = GReaT.load_from_dir(load_path)
 
 n_samples = 1000
 samples = great.sample(n_samples=n_samples,
-                       max_length=2000,
+                       max_length=2048,
                        device='cuda')
 
 now = int(time.time())
