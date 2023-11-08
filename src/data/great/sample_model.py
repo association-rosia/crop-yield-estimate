@@ -12,9 +12,8 @@ llm = 'DistilGPT2'
 load_path = os.path.join(cst.path_models, llm)
 great = GReaT.load_from_dir(load_path)
 
-n_samples = 1000
+n_samples = 100
 samples = great.sample(n_samples=n_samples,
-                       k=2048,
                        max_length=2000,
                        device='cuda')
 
