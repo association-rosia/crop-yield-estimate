@@ -19,7 +19,7 @@ great = GReaT(llm=llm.lower(),
               epochs=50,
               batch_size=128,
               efficient_finetuning='lora',
-              logging_steps=10,
+              logging_steps=10
               )
 
 great.fit(data)

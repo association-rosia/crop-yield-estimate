@@ -23,7 +23,7 @@ class GReaTPreProcessor:
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.one_hot_list(X, step='transform')
         X = self.num_to_cat(X)
-        X = self.cyclical_date_encoding(X)
+        # X = self.cyclical_date_encoding(X)
 
         return X
 
