@@ -16,7 +16,7 @@ parameters:
 
   task:
     distribution: constant
-    value: 'reg_h'
+    value: 'reg_m'
 
   limit_h:
     distribution: constant
