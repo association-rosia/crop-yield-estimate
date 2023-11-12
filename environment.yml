@@ -16,4 +16,4 @@ dependencies:
       - catboost
       - umap-learn
       - be-great
-      
+      - imbalanced-learn      

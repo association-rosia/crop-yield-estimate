@@ -162,7 +162,7 @@ def smote_cross_val_predict(estimator, X, y, cv, n_jobs) -> ndarray:
 def init_trainer(run_config: dict):
     if run_config['data_aug'] == 'smote':
         trainer = smote_cross_val_predict
-    else:
+    elif run_config['data_aug'] == 'none':
         trainer = cross_val_predict
 
     return trainer
