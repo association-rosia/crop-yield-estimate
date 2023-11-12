@@ -1,7 +1,7 @@
 from sklearn.base import RegressorMixin, ClassifierMixin
 from sklearn.model_selection import StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
-from src.features.preprocessing import CYEDataPreProcessor, CYETargetTransformer
+from src.features.preprocessing import CYEPreProcessor, CYETargetTransformer
 from src.utils import create_labels
 
 import pandas as pd
@@ -32,9 +32,9 @@ from src.constants import get_constants
 cst = get_constants()
 
 
-def init_preprocessor(run_config: dict) -> CYEDataPreProcessor:
+def init_preprocessor(run_config: dict) -> CYEPreProcessor:
     config_preprocessor = CYEConfigPreProcessor(**run_config)
-    preprocessor = CYEDataPreProcessor(config_preprocessor)
+    preprocessor = CYEPreProcessor(config_preprocessor)
 
     return preprocessor
 

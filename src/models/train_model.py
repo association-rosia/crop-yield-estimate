@@ -3,7 +3,6 @@ import os
 import sys
 from multiprocessing import Process
 
-import numpy as np
 import yaml
 
 sys.path.append(os.curdir)
@@ -57,6 +56,8 @@ def create_sweep(script_config: dict) -> str:
         dir_config = 'regressors'
     elif script_config['task'] == 'classification':
         dir_config = 'classifiers'
+    else:
+        raise ValueError
 
     path_sweep = os.path.join(cst.path_configs, dir_config, f'{script_config["estimator_name"].lower()}.yml')
     with open(path_sweep, 'r') as file:

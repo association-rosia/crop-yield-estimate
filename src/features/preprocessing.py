@@ -20,7 +20,7 @@ from src.features.iterativeimputer import IterativeImputer
 from src.utils import create_labels
 
 
-class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
+class CYEPreProcessor(BaseEstimator, TransformerMixin):
     def __init__(self, config: CYEConfigPreProcessor) -> None:
         self.config = config
         self.to_del_cols = []
@@ -169,7 +169,8 @@ class CYEDataPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def fix_nan_bias(self, X: DataFrame) -> DataFrame:
+    @staticmethod
+    def fix_nan_bias(X: DataFrame) -> DataFrame:
         for col in X.columns:
             is_in = any([cl_col in col for cl_col in cst.processor['cat_cols'] + cst.processor['list_cols']])
 
