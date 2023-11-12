@@ -23,7 +23,6 @@ class GReaTPreProcessor:
     def transform(self, X: DataFrame) -> DataFrame:
         X = self.one_hot_list(X, step='transform')
         X = self.num_to_cat(X)
-        X = self.cyclical_date_encoding(X)
 
         return X
 
@@ -46,18 +45,6 @@ class GReaTPreProcessor:
                 to_join = [col for col in split_col.columns if col in self.cols_to_replace]
                 X = X.join(split_col[to_join])
                 X.drop(columns=col, inplace=True)
-
-        return X
-
-    @staticmethod
-    def cyclical_date_encoding(X: DataFrame) -> DataFrame:
-        for col in cst.processor['date_cols']:
-            X[col] = pd.to_datetime(X[col])
-            X[f'{col}Year'] = X[col].dt.year.astype('string').str[:4]
-            X[f'{col}DayOfYear'] = X[col].dt.dayofyear
-            X[f'{col}DayOfYearSin'] = np.sin(2 * np.pi * X[f'{col}DayOfYear'] / 365)
-            X[f'{col}DayOfYearCos'] = np.cos(2 * np.pi * X[f'{col}DayOfYear'] / 365)
-            X.drop(columns=[col, f'{col}DayOfYear'], inplace=True)
 
         return X
 
