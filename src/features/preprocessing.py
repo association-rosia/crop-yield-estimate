@@ -244,7 +244,7 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
 
 if __name__ == '__main__':
     config = CYEConfigPreProcessor(fillna='none', deloutliers=True)
-    processor = CYEDataPreProcessor(config=config)
+    processor = CYEPreProcessor(config=config)
 
     # config = CYEConfigTransformer(scale=scale)
     # transformer = CYETargetTransformer(config=config)
@@ -264,7 +264,7 @@ if __name__ == '__main__':
     for df_train in [df_train_h]:
         X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
         # y_train = transformer.fit_transform(X_train, y_train)
-        processor = CYEDataPreProcessor(config=config)
+        processor = CYEPreProcessor(config=config)
         X_train = processor.fit_transform(X_train)
         # y_train = transformer.inverse_transform(y_train)
 

@@ -65,11 +65,15 @@ if __name__ == '__main__':
     X_test = processor.transform(X_test)
 
     df_train = pd.concat([X_train, y_train], axis='columns')
-    save_path = os.path.join(cst.path_processed_data, 'TrainGReaT.csv')
+    save_path = os.path.join(cst.path_raw_data, 'TrainGReaT.csv')
     df_train.to_csv(save_path, index=False)
 
-    df = pd.concat([X_train, X_test], axis='rows')
-    save_path = os.path.join(cst.path_processed_data, 'TrainTestGReaT.csv')
-    df_train.to_csv(save_path, index=False)
+    df_train_test = pd.concat([X_train, X_test], axis='rows')
+    save_path = os.path.join(cst.path_raw_data, 'TrainTestGReaT.csv')
+    df_train_test.to_csv(save_path, index=False)
+
+    df_train_test_yield = pd.concat([df_train, X_test], axis='rows')
+    save_path = os.path.join(cst.path_raw_data, 'TrainTestYieldGReaT.csv')
+    df_train_test_yield.to_csv(save_path, index=False)
 
     print()
