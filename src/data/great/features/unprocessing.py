@@ -1,66 +1,106 @@
+import warnings
+warnings.filterwarnings('ignore')
+
 import os
 import pandas as pd
 from datetime import datetime
+from sklearn.base import BaseEstimator, TransformerMixin
 from src.constants import get_constants
 import math
 
 cst = get_constants()
 
 
-def one_hot_decoding_row(row, col, ohe_cols):
-    value = []
+class CYEUnProcessor(BaseEstimator, TransformerMixin):
 
-    for ohe_col in ohe_cols:
-        if row[ohe_col]:
-            value.append(ohe_col.replace(col, ""))
+    def transform_save(self, df):
+        df = self.transform(df)
+        self.save(df)
 
-    return ' '.join(value)
+    def transform(self, df):
+        df = self.one_hot_decoding(df)
+        df = self.remove_wrong_date(df)
+        df = self.remove_wrong_cat(df)
 
+        return df
 
-def one_hot_decoding(df_gen):
-    for col in cst.processor['list_cols']:
-        ohe_cols = [ohe_col for ohe_col in df_gen.columns if ohe_col.startswith(col)]
-        df_gen[col] = df_gen.apply(lambda row: one_hot_decoding_row(row, col, ohe_cols), axis='columns')
-        df_gen.drop(columns=ohe_cols, inplace=True)
+    @staticmethod
+    def save(df):
+        new_file_name = file_name.split('-')[0] + f'-{len(df)}.csv'
+        save_path = os.path.join(cst.path_processed_data, new_file_name)
+        df.to_csv(save_path, index=False)
 
-    return df_gen
+    @staticmethod
+    def one_hot_decoding_row(row, col, ohe_cols):
+        value = []
 
+        for ohe_col in ohe_cols:
+            if row[ohe_col]:
+                value.append(ohe_col.replace(col, ""))
 
-def isnan(value):
-    try:
-        return math.isnan(float(value))
-    except Exception as e:
-        return False
+        return ' '.join(value)
 
+    def one_hot_decoding(self, df):
+        for col in cst.processor['list_cols']:
+            ohe_cols = [ohe_col for ohe_col in df.columns if ohe_col.startswith(col)]
+            df[col] = df.apply(lambda row: self.one_hot_decoding_row(row, col, ohe_cols), axis='columns')
+            df.drop(columns=ohe_cols, inplace=True)
 
-def is_valid_date(row):
-    is_valid = True
-    date_format = '%Y-%m-%d'
+        return df
 
-    for col in cst.processor['date_cols']:
-        date = row[col]
+    @staticmethod
+    def isnan(value):
+        try:
+            return math.isnan(float(value))
+        except Exception as e:
+            return False
 
-        if not isnan(date):
-            try:
-                date = datetime.strptime(date, date_format)
+    def is_valid_date(self, row):
+        is_valid = True
+        date_format = '%Y-%m-%d'
 
-                if date.year > 2023:
+        for col in cst.processor['date_cols']:
+            date = row[col]
+
+            if not self.isnan(date):
+                try:
+                    date = datetime.strptime(date, date_format)
+
+                    if date.year > 2023:
+                        is_valid = False
+
+                except Exception as e:
                     is_valid = False
+                    print(col, date, e)
+                    pass
 
-            except Exception as e:
-                is_valid = False
-                print(col, date, e)
-                pass
+        return is_valid
 
-    return is_valid
+    def remove_wrong_date(self, df):
+        df['isValid'] = df.apply(lambda row: self.is_valid_date(row), axis='columns')
+        df = df[df['isValid']]
+        df.drop(columns='isValid', inplace=True)
 
+        return df
 
-def remove_wrong_date(df_gen):
-    df_gen['isValidDate'] = df_gen.apply(lambda row: is_valid_date(row), axis='columns')
-    df_gen = df_gen[df_gen['isValidDate']]
-    df_gen.drop(columns='isValidDate', inplace=True)
+    @staticmethod
+    def is_valid_cat(row, df_train):
+        for col in cst.processor['cat_cols']:
+            if 'Year' not in col:
+                valid_values = df_train[col].unique().tolist()
 
-    return df_gen
+                if row[col] not in valid_values:
+                    return False
+
+        return True
+
+    def remove_wrong_cat(self, df):
+        df_train = pd.read_csv(os.path.join(cst.file_data_train), index_col='ID')
+        df['isValid'] = df.apply(lambda row: self.is_valid_cat(row, df_train), axis='columns')
+        df = df[df['isValid']]
+        df.drop(columns='isValid', inplace=True)
+
+        return df
 
 
 if __name__ == '__main__':
@@ -68,9 +108,5 @@ if __name__ == '__main__':
     file_path = os.path.join(cst.path_interim_data, file_name)
     df_gen = pd.read_csv(file_path)
 
-    df_gen = one_hot_decoding(df_gen)
-    df_gen = remove_wrong_date(df_gen)
-
-    new_file_name = file_name.split('-')[0] + f'-{len(df_gen)}.csv'
-    save_path = os.path.join(cst.path_processed_data, new_file_name)
-    df_gen.to_csv(save_path, index=False)
+    unprocessor = CYEUnProcessor()
+    unprocessor.transform_save(df_gen)
