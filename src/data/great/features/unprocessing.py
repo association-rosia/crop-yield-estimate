@@ -43,9 +43,13 @@ def is_valid_date(row):
         if not isnan(date):
             try:
                 date = datetime.strptime(date, date_format)
+
+                if date.year > 2023:
+                    is_valid = False
+
             except Exception as e:
                 is_valid = False
-                print(date, e)
+                print(col, date, e)
                 pass
 
     return is_valid
@@ -67,6 +71,6 @@ if __name__ == '__main__':
     df_gen = one_hot_decoding(df_gen)
     df_gen = remove_wrong_date(df_gen)
 
-    new_file_name = file_name.split('-')[0] + f'-{len(df_gen)}'
+    new_file_name = file_name.split('-')[0] + f'-{len(df_gen)}.csv'
     save_path = os.path.join(cst.path_processed_data, new_file_name)
     df_gen.to_csv(save_path, index=False)
