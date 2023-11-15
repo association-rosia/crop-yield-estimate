@@ -17,7 +17,7 @@ data = pd.read_csv(data_path)
 
 imputed_data = model.impute(data, max_length=2048)
 
-save_path = os.path.join(cst.path_processed_data, f'TrainImputed-{llm}.csv')
+save_path = os.path.join(cst.path_generated_data, f'TrainImputed-{llm}.csv')
 imputed_data.to_csv(save_path, index=False)
 
 

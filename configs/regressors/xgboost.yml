@@ -26,6 +26,10 @@ parameters:
     distribution: constant
     value: 500
 
+  generated_file:
+    distribution: constant
+    value: 'TrainGReaTGPT2-10000.csv'
+
   # Preprocessing
   delna_thr:
     distribution: uniform

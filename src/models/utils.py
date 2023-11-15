@@ -2,13 +2,11 @@ from sklearn.base import RegressorMixin, ClassifierMixin
 from sklearn.model_selection import StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEPreProcessor, CYETargetTransformer
+from src.features.great.features.unprocessing import CYEGReaTProcessor
 from src.utils import create_labels
 
 import pandas as pd
-from pandas import DataFrame, Series
-
 import numpy as np
-from numpy import ndarray
 
 from sklearn.model_selection import cross_val_predict
 from imblearn.over_sampling import SMOTE
@@ -110,14 +108,15 @@ def init_evaluation_metrics(run_config: dict):
     return evaluation_metrics
 
 
-def get_test_data() -> DataFrame:
+def get_test_data() -> pd.DataFrame:
     df_test = pd.read_csv(cst.file_data_test, index_col='ID')
 
     return df_test
 
 
-def get_train_data(run_config: dict) -> DataFrame:
-    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
+def get_train_data(run_config: dict) -> pd.DataFrame:
+    great_processor = CYEGReaTProcessor(limit_h=5000, limit_l=500)
+    df_train = great_processor.transform_merge(generated_file=run_config['generated_file'])
 
     if run_config['task'] in ['reg_h', 'reg_m', 'reg_l']:
         labels = create_labels(
@@ -137,7 +136,7 @@ def get_train_data(run_config: dict) -> DataFrame:
     return df_train
 
 
-def apply_smote(X, y) -> (DataFrame, Series):
+def apply_smote(X, y) -> (pd.DataFrame, pd.Series):
     k_neighbors = np.unique(y, return_counts=True)[1][2] - 1
     smote = SMOTE(k_neighbors=k_neighbors)
     smoteenn = SMOTEENN(smote=smote)
@@ -146,7 +145,7 @@ def apply_smote(X, y) -> (DataFrame, Series):
     return X, y
 
 
-def smote_cross_val_predict(estimator, X, y, cv, n_jobs) -> ndarray:
+def smote_cross_val_predict(estimator, X, y, cv, n_jobs) -> np.ndarray:
     y_pred = np.zeros(shape=y.shape)
 
     for train_idx, val_idx in cv.split(X, y):

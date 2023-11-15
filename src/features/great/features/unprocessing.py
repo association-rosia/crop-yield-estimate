@@ -11,24 +11,41 @@ import math
 cst = get_constants()
 
 
-class CYEUnProcessor(BaseEstimator, TransformerMixin):
+class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
+    def __init__(self, limit_h: int = None, limit_l: int = None) -> None:
+        self.limit_h = limit_h
+        self.limit_l = limit_l
 
-    def transform_save(self, df):
-        df = self.transform(df)
-        self.save(df)
+    def transform_merge(self, generated_file: str = None):
+        df_train = pd.read_csv(cst.file_data_train, index_col='ID')
+
+        if generated_file:
+            generated_path = os.path.join(cst.path_generated_data, generated_file)
+            df_gen = pd.read_csv(generated_path)
+            df_gen = self.transform(df_gen)
+            df_train = pd.concat([df_train, df_gen], axis='rows')
+
+        return df_train
 
     def transform(self, df):
+        df = self.filter_limits(df)
         df = self.one_hot_decoding(df)
         df = self.remove_wrong_date(df)
         df = self.remove_wrong_cat(df)
 
         return df
 
-    @staticmethod
-    def save(df):
-        new_file_name = file_name.split('-')[0] + f'-{len(df)}.csv'
-        save_path = os.path.join(cst.path_processed_data, new_file_name)
-        df.to_csv(save_path, index=False)
+    def filter_limits(self, df):
+        yield_by_acre = df['Yield'] / df['Acre']
+
+        if self.limit_h and self.limit_l:
+            df = df[(yield_by_acre > self.limit_h) | (yield_by_acre < self.limit_l)]
+        elif self.limit_h:
+            df = df[yield_by_acre > self.limit_h]
+        elif self.limit_l:
+            df = df[yield_by_acre < self.limit_l]
+
+        return df
 
     @staticmethod
     def one_hot_decoding_row(row, col, ohe_cols):
@@ -104,9 +121,8 @@ class CYEUnProcessor(BaseEstimator, TransformerMixin):
 
 
 if __name__ == '__main__':
-    file_name = 'TrainGReaTGPT2-10000.csv'
-    file_path = os.path.join(cst.path_interim_data, file_name)
-    df_gen = pd.read_csv(file_path)
+    great_processor = CYEGReaTProcessor(limit_h=5000, limit_l=500)
+    generated_path = os.path.join(cst.path_generated_data, 'TrainGReaTGPT2-10000.csv')
+    df_train = great_processor.transform_merge(train_path=cst.file_data_train, generated_path=generated_path)
 
-    unprocessor = CYEUnProcessor()
-    unprocessor.transform_save(df_gen)
+    print()
