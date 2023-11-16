@@ -20,30 +20,31 @@ class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
         df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
         if generated_file:
-            generated_path = os.path.join(cst.path_generated_data, generated_file)
-            df_gen = pd.read_csv(generated_path)
-            df_gen = self.transform(df_gen)
+            df_gen = self.transform(generated_file)
             df_train = pd.concat([df_train, df_gen], axis='rows')
 
         return df_train
 
-    def transform(self, df):
-        df = self.filter_limits(df)
+    def transform(self, generated_file: str = None):
+        generated_path = os.path.join(cst.path_generated_data, generated_file)
+        df = pd.read_csv(generated_path)
+
+        df = self.filter(df)
         df = self.one_hot_decoding(df)
         df = self.remove_wrong_date(df)
         df = self.remove_wrong_cat(df)
 
         return df
 
-    def filter_limits(self, df):
-        yield_by_acre = df['Yield'] / df['Acre']
+    def filter(self, df):
+        target_by_acre = df[cst.target_column] / df['Acre']
 
         if self.limit_h and self.limit_l:
-            df = df[(yield_by_acre > self.limit_h) | (yield_by_acre < self.limit_l)]
+            df = df[(target_by_acre > self.limit_h) | (target_by_acre < self.limit_l)]
         elif self.limit_h:
-            df = df[yield_by_acre > self.limit_h]
+            df = df[target_by_acre > self.limit_h]
         elif self.limit_l:
-            df = df[yield_by_acre < self.limit_l]
+            df = df[target_by_acre < self.limit_l]
 
         return df
 
@@ -88,7 +89,7 @@ class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
 
                 except Exception as e:
                     is_valid = False
-                    print(col, date, e)
+                    # print(col, date, e)
                     pass
 
         return is_valid
@@ -122,7 +123,13 @@ class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
 
 if __name__ == '__main__':
     great_processor = CYEGReaTProcessor(limit_h=5000, limit_l=500)
-    generated_path = os.path.join(cst.path_generated_data, 'TrainGReaTGPT2-10000.csv')
-    df_train = great_processor.transform_merge(train_path=cst.file_data_train, generated_path=generated_path)
+    generated_file = 'TrainGenerated-6038.csv'
+    df_train = great_processor.transform_merge(generated_file=generated_file)
+
+    # generated_path = os.path.join(cst.path_generated_data, generated_file)
+    # df = pd.read_csv(generated_path)
+    # df.dropna(subset=[cst.target_column], inplace=True)
+    # save_path = os.path.join(cst.path_generated_data, f'TrainGenerated-{len(df)}.csv')
+    # df.to_csv(save_path, index=False)
 
     print()
