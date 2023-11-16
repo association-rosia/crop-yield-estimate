@@ -20,24 +20,30 @@ class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
         df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
         if generated_file:
-            df_gen = self.transform(generated_file)
+            target_by_acre_train = df_train[cst.target_column] / df_train['Acre']
+            max_target_by_acre = target_by_acre_train.max() + 0.1 * target_by_acre_train.max()
+            df_gen = self.transform(generated_file, max_target_by_acre)
             df_train = pd.concat([df_train, df_gen], axis='rows')
 
         return df_train
 
-    def transform(self, generated_file: str = None):
+    def transform(self, generated_file: str = None, max_target_by_acre: float = None):
         generated_path = os.path.join(cst.path_generated_data, generated_file)
         df = pd.read_csv(generated_path)
 
-        df = self.filter(df)
+        df = self.filter(df, max_target_by_acre)
         df = self.one_hot_decoding(df)
         df = self.remove_wrong_date(df)
         df = self.remove_wrong_cat(df)
 
         return df
 
-    def filter(self, df):
+    def filter(self, df, max_target_by_acre):
         target_by_acre = df[cst.target_column] / df['Acre']
+        df.dropna(subset=[cst.target_column], inplace=True)
+
+        if max_target_by_acre:
+            df = df[target_by_acre <= max_target_by_acre]
 
         if self.limit_h and self.limit_l:
             df = df[(target_by_acre > self.limit_h) | (target_by_acre < self.limit_l)]
@@ -122,8 +128,8 @@ class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
 
 
 if __name__ == '__main__':
-    great_processor = CYEGReaTProcessor(limit_h=5000, limit_l=500)
-    generated_file = 'TrainGenerated-6038.csv'
+    great_processor = CYEGReaTProcessor()
+    generated_file = 'TrainGenerated-50000.csv'
     df_train = great_processor.transform_merge(generated_file=generated_file)
 
     # generated_path = os.path.join(cst.path_generated_data, generated_file)
