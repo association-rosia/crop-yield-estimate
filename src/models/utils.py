@@ -1,5 +1,5 @@
 from sklearn.base import RegressorMixin, ClassifierMixin
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import KFold, StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEPreProcessor, CYETargetTransformer
 from src.features.great.features.unprocessing import CYEGReaTProcessor
@@ -8,7 +8,6 @@ from src.utils import create_labels
 import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import cross_val_predict
 from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
 
@@ -37,7 +36,7 @@ def init_preprocessor(run_config: dict) -> CYEPreProcessor:
     return preprocessor
 
 
-def init_transformer(run_config: dict) -> CYETargetTransformer:
+def init_target_transformer(run_config: dict) -> CYETargetTransformer:
     config_transformer = CYEConfigTransformer(**run_config)
     transformer = CYETargetTransformer(config_transformer)
 
@@ -94,7 +93,11 @@ def init_cross_validator(run_config: dict) -> StratifiedKFold | int:
             random_state=run_config['random_state'],
         )
     else:
-        cv = run_config['cv']
+        cv = KFold(
+            n_splits=run_config['cv'],
+            shuffle=True,
+            random_state=run_config['random_state'],
+        )
 
     return cv
 
@@ -115,8 +118,7 @@ def get_test_data() -> pd.DataFrame:
 
 
 def get_train_data(run_config: dict) -> pd.DataFrame:
-    great_processor = CYEGReaTProcessor(limit_h=5000, limit_l=500)
-    df_train = great_processor.transform_merge(generated_file=run_config['generated_file'])
+    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
     if run_config['task'] in ['reg_h', 'reg_m', 'reg_l']:
         labels = create_labels(
@@ -136,32 +138,70 @@ def get_train_data(run_config: dict) -> pd.DataFrame:
     return df_train
 
 
+def get_gen_data(run_config: dict) -> pd.DataFrame:
+    great_processor = CYEGReaTProcessor(
+        limit_h=run_config['limit_h'],
+        limit_l=run_config['limit_l']
+    )
+
+    df_gen = great_processor.transform(
+        generated_file=run_config['generated_file'],
+        max_target_by_acre=run_config['max_target_by_acre']
+    )
+
+    if run_config['task'] in ['reg_h', 'reg_m', 'reg_l']:
+        labels = create_labels(
+            y=df_gen[cst.target_column],
+            acre=df_gen['Acre'],
+            limit_h=run_config['limit_h'],
+            limit_l=run_config['limit_l'],
+        )
+
+        if run_config['task'] == 'reg_l':
+            df_gen = df_gen[labels == 0].copy(deep=True)
+        elif run_config['task'] == 'reg_m':
+            df_gen = df_gen[labels == 1].copy(deep=True)
+        elif run_config['task'] == 'reg_h':
+            df_gen = df_gen[labels == 2].copy(deep=True)
+
+    return df_gen
+
+
 def apply_smote(X, y) -> (pd.DataFrame, pd.Series):
     k_neighbors = np.unique(y, return_counts=True)[1][2] - 1
     smote = SMOTE(k_neighbors=k_neighbors)
-    smoteenn = SMOTEENN(smote=smote)
-    X, y = smoteenn.fit_resample(X, y)
+    smote_enn = SMOTEENN(smote=smote)
+    X, y = smote_enn.fit_resample(X, y)
 
     return X, y
 
 
-def smote_cross_val_predict(estimator, X, y, cv, n_jobs) -> np.ndarray:
+def apply_great(run_config: dict, X_train: np.ndarray, y_train: np.ndarray, target_transformer, preprocessor) -> (pd.DataFrame, pd.Series):
+    df_gen = get_gen_data(run_config)
+    X_gen, y_gen = df_gen.drop(columns=cst.target_column), df_gen[cst.target_column]
+    X_gen, y_gen = preprocessor.transform(X_gen, y_gen)
+    y_gen = target_transformer.transform(y_gen)
+
+    X_train = pd.concat([X_train, X_gen], axis='columns')
+    y_train = pd.concat([y_train, y_gen], axis='columns')
+
+    return X_train, y_train
+
+
+def train_model(run_config: dict, estimator, X: np.ndarray, y: np.ndarray, cv, target_transformer, preprocessor):
     y_pred = np.zeros(shape=y.shape)
 
     for train_idx, val_idx in cv.split(X, y):
         X_train, y_train = X[train_idx], y[train_idx]
         X_val = X[val_idx]
-        X, y = apply_smote(X, y)
+
+        if run_config['great_augmentation']:
+            X_train, y_train = apply_great(run_config, X_train, y_train, target_transformer, preprocessor)
+
+        if run_config['smote_augmentation']:
+            X_train, y_train = apply_smote(X_train, y_train)
+
         estimator.fit(X_train, y_train)
         y_pred[val_idx] = estimator.predict(X_val)
 
     return y_pred
-
-
-def init_trainer(run_config: dict):
-    if run_config['data_aug'] == 'smote':
-        trainer = smote_cross_val_predict
-    elif run_config['data_aug'] == 'none':
-        trainer = cross_val_predict
-
-    return trainer

@@ -12,11 +12,11 @@ import wandb
 from src.models.utils import (
     init_preprocessor,
     init_estimator,
-    init_transformer,
+    init_target_transformer,
     init_cross_validator,
     init_evaluation_metrics,
     get_train_data,
-    init_trainer
+    train_model
 )
 
 from src.constants import get_constants
@@ -104,7 +104,7 @@ def train():
     preprocessor = init_preprocessor(run_config)
 
     # Init target transformer
-    transformer = init_transformer(run_config)
+    target_transformer = init_target_transformer(run_config)
 
     # Init estimator
     estimator = init_estimator(run_config)
@@ -120,22 +120,23 @@ def train():
 
     # Pre-process data
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
-    y_train = transformer.fit_transform(X_train, y_train)
+    y_train = target_transformer.fit_transform(X_train, y_train)
     X_train = preprocessor.fit_transform(X_train)
 
     # Cross-validate estimator
-    trainer = init_trainer(run_config)
-    y_pred = trainer(
+    y_pred = train_model(
+        run_config=run_config,
         estimator=estimator,
         X=X_train.to_numpy(),
         y=y_train.to_numpy(),
         cv=cv,
-        n_jobs=-1,
+        target_transformer=target_transformer,  # used for the generated data
+        preprocessor=preprocessor   # used for the generated data
     )
 
     # Compute RMSE
-    y_pred = transformer.inverse_transform(y_pred)
-    y_train = transformer.inverse_transform(y_train)
+    y_pred = target_transformer.inverse_transform(y_pred)
+    y_train = target_transformer.inverse_transform(y_train)
     metrics = evaluation_metrics(y_pred=y_pred, y_true=y_train)
 
     # Log results

@@ -31,19 +31,19 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
         self.scaler = StandardScaler()
         self.imputer = self.init_imputer(self.config.fillna)
 
-    def preprocess(self, X: DataFrame) -> DataFrame:
+    def preprocess(self, X: DataFrame, y: Series) -> (DataFrame, Series):
         X = X.copy(deep=True)
         X = self.one_hot_list(X)
         X = self.fill_correlated_cols(X)
         X = self.cyclical_date_encoding(X)
         X = self.one_hot_encoding(X)
         X = self.delete_correlated_cols(X)
-        X = self.delete_outliers(X)
+        X, y = self.delete_outliers(X, y)
 
-        return X
+        return X, y
 
-    def fit(self, X: DataFrame) -> Self:
-        X = self.preprocess(X)
+    def fit(self, X: DataFrame, y: Series = None) -> Self:
+        X, y = self.preprocess(X, y)
         self.get_to_del_cols(X)
         X = self.scale_area_columns(X)
         self.fit_imputer(X)
@@ -52,18 +52,21 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: DataFrame) -> DataFrame:
-        X = self.preprocess(X)
+    def transform(self, X: DataFrame, y: Series = None):
+        X, y = self.preprocess(X, y)
         X = self.scale_area_columns(X)
         X = self.make_consistent(X)
         X = self.fill_missing_values(X)
         X = self.delete_unique_value_cols(X)
         X = self.delete_empty_columns(X)
 
-        return X
+        if y is not None:
+            return X, y
+        else:
+            return X
 
-    def fit_transform(self, X: DataFrame, y=None, **fit_params) -> DataFrame:
-        return self.fit(X).transform(X)
+    def fit_transform(self, X: DataFrame, y: Series = None, **fit_params) -> DataFrame:
+        return self.fit(X, y).transform(X, y)
     
     @staticmethod
     def init_imputer(imputer_name: str):
@@ -73,6 +76,8 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
             imputer = IterativeImputer()
         elif imputer_name == 'none':
             imputer = None
+        else:
+            raise ValueError
             
         return imputer
 
@@ -135,12 +140,15 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-    def delete_outliers(self, X: DataFrame) -> DataFrame:
+    def delete_outliers(self, X: DataFrame, y: Series) -> (DataFrame, Series):
         if self.config.deloutliers:
             for col in cst.outliers_thr:
                 X = X[(X[col] <= cst.outliers_thr[col]) | (X[col].isna())]
 
-        return X
+        if y is not None:
+            y = y[y.index.isin(X.index)]
+
+        return X, y
 
     def fill_missing_values(self, X: DataFrame) -> DataFrame:
         if self.config.fillna != 'none':
@@ -261,16 +269,18 @@ if __name__ == '__main__':
     df_train_m = df_train[labels == 1].copy(deep=True)
     df_train_h = df_train[labels == 2].copy(deep=True)
 
-    for df_train in [df_train_h]:
+    for df_train in [df_train_l, df_train_m, df_train_h]:
         X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
         # y_train = transformer.fit_transform(X_train, y_train)
+
         processor = CYEPreProcessor(config=config)
-        X_train = processor.fit_transform(X_train)
+        X_train, y_train = processor.fit_transform(X_train, y_train)
+
+        print(len(X_train), len(y_train))
         # y_train = transformer.inverse_transform(y_train)
 
         # Test data
         X_test = pd.read_csv(cst.file_data_test, index_col='ID')
-        # y_test = transformer.fit(X_test)
         X_test = processor.transform(X_test)
 
     print()
