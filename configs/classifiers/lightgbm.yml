@@ -26,6 +26,22 @@ parameters:
     distribution: constant
     value: 500
 
+  smote_augmentation:
+    distribution: categorical
+    values: [ True, False ]
+
+  great_augmentation:
+    distribution: categorical
+    values: [ True, False ]
+
+  generated_file:
+    distribution: constant
+    value: 'TrainGenerated-6038.csv'
+
+  max_target_by_acre:
+    distribution: categorical
+    values: [ None, 25000 ]
+
   # Preprocessing
   delna_thr:
     distribution: uniform
