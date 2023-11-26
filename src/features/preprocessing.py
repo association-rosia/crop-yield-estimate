@@ -39,7 +39,8 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
         X = self.one_hot_encoding(X)
         X = self.delete_correlated_cols(X)
         X, y = self.delete_outliers(X, y)
-
+        X, y = self.delete_yield_outliers(X, y)
+        
         return X, y
 
     def fit(self, X: DataFrame, y: Series = None) -> Self:
@@ -149,6 +150,14 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
             y = y[y.index.isin(X.index)]
 
         return X, y
+    
+    def delete_yield_outliers(self, X: DataFrame, y: Series) -> DataFrame:
+        if self.config.yieldoutliers_thr and y is not None:
+            yield_by_acre = y / X['Acre']
+            X = X[yield_by_acre < self.config.yieldoutliers_thr]
+            y = y[y.index.isin(X.index)]
+
+        return X, y
 
     def fill_missing_values(self, X: DataFrame) -> DataFrame:
         if self.config.fillna != 'none':
@@ -169,6 +178,7 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
         X.drop(columns=to_del_cols, inplace=True)
 
         return X
+
 
     def scale_area_columns(self, X: DataFrame) -> DataFrame:
         if self.config.scale != 'none':
@@ -251,11 +261,11 @@ class CYETargetTransformer(BaseEstimator, TransformerMixin):
 
 
 if __name__ == '__main__':
-    config = CYEConfigPreProcessor(fillna='none', deloutliers=True)
+    config = CYEConfigPreProcessor(fillna='none', deloutliers=True, yieldoutliers_thr=5000)
     processor = CYEPreProcessor(config=config)
 
-    # config = CYEConfigTransformer(scale=scale)
-    # transformer = CYETargetTransformer(config=config)
+    config = CYEConfigTransformer()
+    transformer = CYETargetTransformer(config)
     df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
     labels = create_labels(
@@ -273,12 +283,12 @@ if __name__ == '__main__':
         X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
         # y_train = transformer.fit_transform(X_train, y_train)
 
-        processor = CYEPreProcessor(config=config)
+        # processor = CYEPreProcessor(config=config)
         X_train, y_train = processor.fit_transform(X_train, y_train)
 
         print(len(X_train), len(y_train))
         # y_train = transformer.inverse_transform(y_train)
-
+        X_train.index == y_train.index
         # Test data
         X_test = pd.read_csv(cst.file_data_test, index_col='ID')
         X_test = processor.transform(X_test)
