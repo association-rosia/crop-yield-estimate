@@ -1,23 +1,30 @@
 import sys
 import os
 import pandas as pd
-from be_great import GReaT
 
 sys.path.append(os.curdir)
 from src.constants import get_constants
 
+from src.features.great.models.great import GReaT
+
 cst = get_constants()
 
-llm = 'DistilGPT2'
-load_path = os.path.join(cst.path_models, llm)
-model = GReaT.load_from_dir(load_path)
 
-data_path = os.path.join(cst.path_raw_data, 'TrainGReaT.csv')
-data = pd.read_csv(data_path)
+path_model = os.path.join(cst.path_models, 'GPT2Impute')
+great = GReaT.load_from_dir(path_model)
 
-imputed_data = model.impute(data, max_length=2048)
+file_data_train = os.path.join(cst.path_interim_data, 'TrainToImpute.csv')
+file_data_test = os.path.join(cst.path_interim_data, 'TestToImpute.csv')
+target_column = 'Yield'
 
-save_path = os.path.join(cst.path_generated_data, f'TrainImputed-{llm}.csv')
-imputed_data.to_csv(save_path, index=False)
+X_train = pd.read_csv(file_data_train)
+X_train_imputed = great.impute(X_train, temperature=1, max_length=1024, max_retries=100, device='mps')
+save_path = os.path.join(cst.path_interim_data, 'TrainImputed.csv')
+X_train_imputed.to_csv(save_path, index=False)
+
+X_test = pd.read_csv(file_data_test)
+X_test_imputed = great.impute(X_test, temperature=1, max_length=1024, max_retries=100, device='mps')
+save_path = os.path.join(cst.path_interim_data, 'TestImputed.csv')
+X_test_imputed.to_csv(save_path, index=False)
 
 
