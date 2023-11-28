@@ -77,7 +77,7 @@ class GReaT:
     def impute(
             self,
             df_miss: pd.DataFrame,
-            temperature: float = 0.7,
+            temperature: float = 1.0,
             max_length: int = 100,
             max_retries: int = 100,
             device: str = 'cuda',
@@ -91,48 +91,45 @@ class GReaT:
 
         self.model.to(device)
         start_temperature = temperature
-        index = 0
         df_list = []
 
-        with tqdm(total=len(df_miss)) as pbar:
-            while index < len(df_miss):
-                temperature = start_temperature
-                is_complete = False
-                retries = 0
-                df_curr = df_miss.iloc[[index]]
-                org_index = df_curr.index  # Keep index in new DataFrame
+        for index in tqdm(range(len(df_miss))):
+            temperature = start_temperature
+            is_complete = False
+            retries = 0
+            df_curr = df_miss.iloc[[index]]
+            org_index = df_curr.index  # Keep index in new DataFrame
 
-                while not is_complete:
-                    # Generate text promt from current features.
-                    start_num_nan = df_curr.isna().any().sum()
-                    starting_prompts = _partial_df_to_promts(df_curr)
-                    df_curr = self.great_sample(starting_prompts, temperature, max_length, device=device)
+            while not is_complete:
+                # Generate text promt from current features.
+                start_num_nan = df_curr.isna().any().sum()
+                starting_prompts = _partial_df_to_promts(df_curr)
+                df_curr = self.great_sample(starting_prompts, temperature, max_length, device=device)
 
-                    # Convert numerical values to float, flawed numerical values to NaN
-                    for i_num_cols in self.num_cols:
-                        df_curr[i_num_cols] = pd.to_numeric(df_curr[i_num_cols], errors='coerce')
+                # Convert numerical values to float, flawed numerical values to NaN
+                for i_num_cols in self.num_cols:
+                    df_curr[i_num_cols] = pd.to_numeric(df_curr[i_num_cols], errors='coerce')
 
-                    df_curr[self.num_cols] = df_curr[self.num_cols].astype(float)
-                    current_num_nan = df_curr.isna().any().sum()
+                df_curr[self.num_cols] = df_curr[self.num_cols].astype(float)
+                current_num_nan = df_curr.isna().any().sum()
 
-                    # Check for missing values
-                    if not df_curr.isna().any().any():
-                        is_complete = True
-                        df_list.append(df_curr.set_index(org_index))
+                # Check for missing values
+                if not df_curr.isna().any().any():
+                    is_complete = True
+                    df_list.append(df_curr.set_index(org_index))
 
-                    elif retries == max_retries:
-                        warnings.warn('Max retries reached.')
-                        is_complete = True
-                        df_list.append(df_curr.set_index(org_index))
+                elif retries == max_retries:
+                    warnings.warn('Max retries reached.')
+                    is_complete = True
+                    df_list.append(df_curr.set_index(org_index))
 
-                    else:
-                        if start_num_nan == current_num_nan:
-                            temperature += 0.1
+                else:
+                    if start_num_nan == current_num_nan:
+                        temperature += 0.1
 
-                        retries += 1
+                    retries += 1
 
                 index += 1
-                pbar.update(1)
 
         return pd.concat(df_list, axis=0)
 

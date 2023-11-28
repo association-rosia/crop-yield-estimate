@@ -7,7 +7,7 @@ import torch
 from transformers import AutoTokenizer
 
 
-def _convert_tokens_to_text(tokens: tp.List[torch.Tensor], tokenizer: AutoTokenizer) -> tp.List[str]:
+def _convert_tokens_to_text(tokens: tp.List[torch.Tensor], tokenizer: AutoTokenizer) -> list[str]:
     # Convert tokens to text
     text_data = [tokenizer.decode(t) for t in tokens]
 
@@ -19,7 +19,7 @@ def _convert_tokens_to_text(tokens: tp.List[torch.Tensor], tokenizer: AutoTokeni
     return text_data
 
 
-def _convert_text_to_tabular_data(text: tp.List[str], columns: tp.List[str]) -> pd.DataFrame:
+def _convert_text_to_tabular_data(text: list[str], columns: list[str]) -> pd.DataFrame:
     generated = []
 
     # Convert text to tabular data
