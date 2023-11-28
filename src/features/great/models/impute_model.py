@@ -1,5 +1,9 @@
+import sys
 import os
 import pandas as pd
+
+sys.path.append(os.curdir)
+
 from src.features.great.models.great import GReaT
 
 path_interim_data = 'drive/MyDrive/20 - ROSIA/10 - Projets/03 - Digital Green Crop Yield Estimate Challenge/data'
