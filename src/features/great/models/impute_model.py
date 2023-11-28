@@ -6,8 +6,8 @@ sys.path.append(os.curdir)
 
 from src.features.great.models.great import GReaT
 
-path_interim_data = 'drive/MyDrive/20 - ROSIA/10 - Projets/03 - Digital Green Crop Yield Estimate Challenge/data'
-path_models = 'drive/MyDrive/20 - ROSIA/10 - Projets/03 - Digital Green Crop Yield Estimate Challenge/models'
+path_interim_data = '../drive/MyDrive/20 - ROSIA/10 - Projets/03 - Digital Green Crop Yield Estimate Challenge/data'
+path_models = '../drive/MyDrive/20 - ROSIA/10 - Projets/03 - Digital Green Crop Yield Estimate Challenge/models'
 
 path_model = os.path.join(path_models, 'GPT2Impute')
 great = GReaT.load_from_dir(path_model)
