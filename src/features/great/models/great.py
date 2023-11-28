@@ -131,8 +131,6 @@ class GReaT:
 
                         retries += 1
 
-                    print(temperature)
-
                 index += 1
                 pbar.update(1)
 
