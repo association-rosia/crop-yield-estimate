@@ -9,6 +9,8 @@ from src.features.great.models.great import GReaT
 
 cst = get_constants()
 
+cst.path_interim_data = 'drive/MyDrive/20 - ROSIA/10 - Projets/03 - Digital Green Crop Yield Estimate Challenge/data/'
+print(cst.path_interim_data)
 
 path_model = os.path.join(cst.path_models, 'GPT2Impute')
 great = GReaT.load_from_dir(path_model)
