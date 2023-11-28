@@ -17,12 +17,12 @@ file_data_test = os.path.join(cst.path_interim_data, 'TestToImpute.csv')
 target_column = 'Yield'
 
 X_train = pd.read_csv(file_data_train)
-X_train_imputed = great.impute(X_train, temperature=2, max_length=1024)
+X_train_imputed = great.impute(X_train, max_length=1024)
 save_path = os.path.join(cst.path_interim_data, 'TrainImputed.csv')
 X_train_imputed.to_csv(save_path, index=False)
 
 X_test = pd.read_csv(file_data_test)
-X_test_imputed = great.impute(X_test, temperature=2, max_length=1024)
+X_test_imputed = great.impute(X_test, max_length=1024)
 save_path = os.path.join(cst.path_interim_data, 'TestImputed.csv')
 X_test_imputed.to_csv(save_path, index=False)
 
