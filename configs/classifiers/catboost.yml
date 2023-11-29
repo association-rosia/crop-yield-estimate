@@ -6,6 +6,7 @@ metric:
   goal: maximize
 
 parameters:
+
   random_state:
     distribution: constant
     value: 42
@@ -25,6 +26,10 @@ parameters:
   limit_l:
     distribution: constant
     value: 500
+
+  use_llm_imputation:
+    distribution: categorical
+    values: [ True, False ]
 
   smote_augmentation:
     distribution: categorical
