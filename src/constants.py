@@ -3,9 +3,7 @@ import os
 import GPUtil
 from lightgbm import LGBMRegressor, LGBMClassifier
 from xgboost import XGBRegressor, XGBClassifier
-# from lce import LCERegressor
-
-from src.config import XGBConfig, LGBMConfig, LCEConfig
+from src.config import XGBConfig, LGBMConfig
 
 
 class CYEConstants:
