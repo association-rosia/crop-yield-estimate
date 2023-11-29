@@ -104,7 +104,57 @@ class LGBMConfig(BaseConfig):
         self.verbose = verbose
 
 
-class LCEConfig(BaseConfig):
+class CATBConfig(BaseConfig):
     def __init__(self,
+                 loss_function: str = None,
+                 estimator_name: str = None,
+                 n_estimators: int = None,
+                 learning_rate: float = None,
+                 reg_lambda: float = None,
+                 bootstrap_type: str = None,
+                 bagging_temperature: float = None,
+                 subsample: float = None,
+                 max_depth: int = None,
+                 grow_policy: str = None,
+                 leaf_estimation_iterations: int = None,
+                 leaf_estimation_backtracking: str = None,
+                 min_data_in_leaf: int = None,
+                 auto_class_weights: str = None,
+                 max_leaves: int = None,
+                 colsample_bylevel: float = None,
+                 nan_mode: str = None,
+                 boosting_type: str = None,
+                 boosting_from_average: bool = None,
+                 langevin: bool = None,
+                 diffusion_temperature: int = None,
+                 score_function: str = None,
+                 penalties_coefficient: float = None,
+                 model_shrink_rate: float = None,
+                 model_shrink_mode: str = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
+        self.loss_function = loss_function
+        self.estimator_name = estimator_name
+        self.n_estimators = n_estimators
+        self.learning_rate = learning_rate
+        self.reg_lambda = reg_lambda
+        self.bootstrap_type = bootstrap_type
+        self.bagging_temperature = bagging_temperature
+        self.subsample = subsample
+        self.max_depth = max_depth
+        self.grow_policy = grow_policy
+        self.leaf_estimation_iterations = leaf_estimation_iterations
+        self.leaf_estimation_backtracking = leaf_estimation_backtracking
+        self.min_data_in_leaf = min_data_in_leaf
+        self.auto_class_weights = auto_class_weights
+        self.max_leaves = max_leaves
+        self.colsample_bylevel = colsample_bylevel
+        self.nan_mode = nan_mode
+        self.boosting_type = boosting_type
+        self.boosting_from_average = boosting_from_average
+        self.langevin = langevin
+        self.diffusion_temperature = diffusion_temperature
+        self.score_function = score_function
+        self.penalties_coefficient = penalties_coefficient
+        self.model_shrink_rate = model_shrink_rate
+        self.model_shrink_mode = model_shrink_mode
