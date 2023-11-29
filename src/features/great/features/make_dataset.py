@@ -90,6 +90,7 @@ if __name__ == '__main__':
     df_impute.to_csv(save_path, index=False)
 
     save_path = os.path.join(cst.path_interim_data, 'TrainToImpute.csv')
-    X_train_impute.to_csv(save_path, index=False)
+    X_train_impute_w_target = pd.concat([X_train_impute, y_train], axis='columns')
+    X_train_impute_w_target.to_csv(save_path, index=False)
     save_path = os.path.join(cst.path_interim_data, 'TestToImpute.csv')
     X_test_impute.to_csv(save_path, index=False)
