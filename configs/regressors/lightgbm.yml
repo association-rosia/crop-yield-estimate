@@ -63,7 +63,7 @@ parameters:
 
   #  device:
   #    distribution: constant
-  #    value: 'cuda'
+  #    value: 'gpu'
 
   n_estimators:
     distribution: int_uniform

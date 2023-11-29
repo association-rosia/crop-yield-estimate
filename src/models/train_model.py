@@ -154,7 +154,7 @@ def parse_args() -> dict:
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
     parser.add_argument('--debug', action='store_true', default=True,
                         help='Run a single training using debug-config.yml (for debug purpose)')
-    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM'],
+    parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM', 'CatBoost'],
                         help='Estimator to use')
     parser.add_argument('--task', type=str, default='classification', choices=['classification', 'regression'],
                         help='Task to be performed')

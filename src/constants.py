@@ -3,7 +3,8 @@ import os
 import GPUtil
 from lightgbm import LGBMRegressor, LGBMClassifier
 from xgboost import XGBRegressor, XGBClassifier
-from src.config import XGBConfig, LGBMConfig
+from catboost import CatBoostRegressor, CatBoostClassifier
+from src.config import XGBConfig, LGBMConfig, CATBConfig
 
 
 class CYEConstants:
@@ -88,10 +89,10 @@ class CYEConstants:
                 'config': LGBMConfig,
                 'estimator': LGBMRegressor
             },
-            # 'LCE': {
-            #     'config': LCEConfig,
-            #     'estimator': LCERegressor
-            # }
+            'CatBoost': {
+                'config': CATBConfig,
+                'estimator': CatBoostRegressor
+            }
         }
 
         return reg_estimators
@@ -107,6 +108,10 @@ class CYEConstants:
                 'config': LGBMConfig,
                 'estimator': LGBMClassifier
             },
+            'CatBoost': {
+                'config': CATBConfig,
+                'estimator': CatBoostClassifier
+            }
         }
 
         return cls_estimators

@@ -1,0 +1,171 @@
+# General
+method: bayes
+
+metric:
+  name: cls/f1-score
+  goal: maximize
+
+parameters:
+  random_state:
+    distribution: constant
+    value: 42
+
+  cv:
+    distribution: constant
+    value: 5
+
+  task:
+    distribution: constant
+    value: 'classification'
+
+  limit_h:
+    distribution: constant
+    value: 5000
+
+  limit_l:
+    distribution: constant
+    value: 500
+
+  smote_augmentation:
+    distribution: categorical
+    values: [ True, False ]
+
+  great_augmentation:
+    distribution: categorical
+    values: [ True, False ]
+
+  generated_file:
+    distribution: constant
+    value: 'TrainGenerated-6038.csv'
+
+  max_target_by_acre:
+    distribution: categorical
+    values: [ None, 25000 ]
+
+  # Preprocessing
+  delna_thr:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  fillna:
+    distribution: categorical
+    values: [True, False]
+
+  scale:
+    distribution: constant
+    value: 'none'
+
+  # Model
+  loss_function:
+    distribution: constant
+    value: 'CrossEntropy'
+  
+  estimator_name:
+    distribution: constant
+    value: 'CatBoost'
+
+  n_estimators:
+    distribution: int_uniform
+    min: 100
+    max: 1000
+
+  learning_rate:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  reg_lambda:
+    distribution: uniform
+    min: 0.01
+    max: 1
+
+  bootstrap_type:
+    distribution: categorical
+    values: ['Bayesian', 'Bernoulli', 'MVS']
+
+  bagging_temperature:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  subsample: # bagging_fraction
+    distribution: uniform
+    min: 0
+    max: 1
+
+  max_depth:
+    distribution: int_uniform
+    min: 1
+    max: 100
+
+  grow_policy:
+    distribution: categorical
+    values: ['SymmetricTree', 'Depthwise', 'Lossguide']
+
+  leaf_estimation_iterations:
+    distribution: int_uniform
+    min: 1
+    max: 100
+
+  leaf_estimation_backtracking:
+    distribution: categorical
+    values: ['No', 'AnyImprovement']
+
+  min_data_in_leaf:
+    distribution: int_uniform
+    min: 1
+    max: 100
+
+  auto_class_weights:
+    distribution: constant
+    values: 'Balanced'
+
+  max_leaves:
+    distribution: int_uniform
+    min: 2
+    max: 1024
+
+  colsample_bylevel:
+    distribution: uniform
+    min: 0
+    max: 1
+
+  nan_mode:
+    distribution: constant
+    value: 'Forbidden'
+
+  boosting_type:
+    distribution: categorical
+    values: ['Plain', 'Ordered']
+
+  boosting_from_average:
+    distribution: categorical
+    values: [True, False]
+
+  langevin:
+    distribution: categorical
+    values: [True, False]
+
+  diffusion_temperature:
+    distribution: int_uniform
+    min: 0
+    max: 100000
+
+  score_function:
+    distribution: categorical
+    values: ['L2', 'NewtonL2']
+
+  penalties_coefficient:
+    distribution: uniform
+    min: 0.1
+    max: 10
+
+  model_shrink_rate:
+    distribution: uniform
+    min: 0.001
+    max: 1
+
+  model_shrink_mode:
+    distribution: uniform
+    values: ['Constant', 'Decreasing']
