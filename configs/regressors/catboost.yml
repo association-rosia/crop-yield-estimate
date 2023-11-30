@@ -5,6 +5,8 @@ metric:
   name: reg/rmse
   goal: minimize
 
+run_cap: 10000
+
 parameters:
   random_state:
     distribution: constant
@@ -40,7 +42,7 @@ parameters:
 
   generated_file:
     distribution: categorical
-    value: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
+    values: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
 
   max_target_by_acre:
     distribution: categorical
