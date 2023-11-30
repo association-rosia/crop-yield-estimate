@@ -1,118 +1,76 @@
-
 random_state:
-  distribution: constant
   value: 42
 
 cv:
-  distribution: constant
   value: 5
 
 task:
-  distribution: constant
   value: 'classification'
 
 limit_h:
-  distribution: constant
   value: 5000
 
 limit_l:
-  distribution: constant
   value: 500
 
 use_llm_imputation:
-  distribution: categorical
-  values: [ True, False ]
+  value: True
 
 smote_augmentation:
-  distribution: categorical
-  values: [ True, False ]
+  value: True
 
 great_augmentation:
-  distribution: categorical
-  values: [ True, False ]
+  value: True
 
 generated_file:
-  distribution: categorical
-  values: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
+  value: 'TrainGenerated-6038.csv'
 
 max_target_by_acre:
-  distribution: categorical
-  values: [ None, 25000 ]
+  value: 25000
 
 # Preprocessing
 delna_thr:
-  distribution: uniform
-  min: 0
-  max: 1
+  value: 0.5
 
 fillna:
-  distribution: categorical
-  values: [ True, False ]
+  value: True
 
 scale:
-  distribution: constant
   value: 'none'
 
 # Model
 estimator_name:
-  distribution: constant
-  value: 'XGBoost'
+  value: 'LightGBM'
 
-eval_metric:
-  distribution: constant
-  value: 'logloss'
-
-n_estimators:
-  distribution: int_uniform
-  min: 100
-  max: 1000
-
-learning_rate:
-  distribution: uniform
-  min: 0
-  max: 1
+num_leaves:
+  value: 128
 
 max_depth:
-  distribution: int_uniform
-  min: 1
-  max: 100
+  value: 8
 
-subsample:
-  distribution: uniform
-  min: 0
-  max: 1
+learning_rate:
+  value: 0.5
 
-colsample_bytree:
-  distribution: uniform
-  min: 0
-  max: 1
+n_estimators:
+  value: 500
 
-colsample_bylevel:
-  distribution: uniform
-  min: 0
-  max: 1
+class_weight:
+  value: 'balanced'
 
-colsample_bynode:
-  distribution: uniform
-  min: 0
-  max: 1
+min_data_in_leaf:
+  value: 50
 
-min_child_weight:
-  distribution: uniform
-  min: 1
-  max: 5
+subsample: # bagging_fraction
+  value: 0.5
+
+colsample_bytree: # feature_fraction
+  value: 0.5
 
 reg_alpha:
-  distribution: uniform
-  min: 0
-  max: 50
+  value: 5
 
 reg_lambda:
-  distribution: uniform
-  min: 0
-  max: 50
+  value: 5
 
-gamma:
-  distribution: uniform
-  min: 0
-  max: 10
+verbose:
+  value: -1
