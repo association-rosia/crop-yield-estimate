@@ -39,8 +39,8 @@ parameters:
     values: [ True, False ]
 
   generated_file:
-    distribution: constant
-    value: 'TrainGenerated-6038.csv'
+    distribution: categorical
+    value: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
 
   max_target_by_acre:
     distribution: categorical

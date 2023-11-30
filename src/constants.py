@@ -19,7 +19,9 @@ class CYEConstants:
         self.path_raw_data = os.path.join('data', 'raw') if os.path.exists(os.path.join('data', 'raw')) else os.path.join('..', 'data', 'raw')
 
         self.file_data_train = os.path.join(self.path_raw_data, 'Train.csv')
+        self.file_data_train_imputed = os.path.join(self.path_interim_data, 'TrainImputed.csv')
         self.file_data_test = os.path.join(self.path_raw_data, 'Test.csv')
+        self.file_data_test_imputed = os.path.join(self.path_interim_data, 'TestImputed.csv')
 
         # Paths for models and submissions
         self.path_models = 'models'

@@ -40,7 +40,7 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
         X = self.delete_correlated_cols(X)
         X, y = self.delete_outliers(X, y)
         X, y = self.delete_yield_outliers(X, y)
-        
+
         return X, y
 
     def fit(self, X: DataFrame, y: Series = None) -> Self:
@@ -68,7 +68,7 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
 
     def fit_transform(self, X: DataFrame, y: Series = None, **fit_params) -> DataFrame:
         return self.fit(X, y).transform(X, y)
-    
+
     @staticmethod
     def init_imputer(imputer_name: str):
         if imputer_name == 'KNNImputer':
@@ -79,17 +79,17 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
             imputer = None
         else:
             raise ValueError
-            
+
         return imputer
 
     @staticmethod
     def one_hot_list(X: DataFrame) -> DataFrame:
         for col in cst.processor['list_cols']:
             split_col = X[col].str.split().explode()
-            split_col = pd.get_dummies(split_col, prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
+            split_col = pd.get_dummies(split_col, prefix=col, prefix_sep='')  # , dummy_na=True, drop_first=True)
             split_col = split_col.astype(np.uint8).groupby(level=0).max()
-            split_col.loc[split_col[f'{col}nan'] == 1] = np.nan
-            split_col.drop(columns=f'{col}nan', inplace=True)
+            # split_col.loc[split_col[f'{col}nan'] == 1] = np.nan
+            # split_col.drop(columns=f'{col}nan', inplace=True)
             X = X.join(split_col)
             X.drop(columns=col, inplace=True)
 
@@ -150,7 +150,7 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
             y = y[y.index.isin(X.index)]
 
         return X, y
-    
+
     def delete_yield_outliers(self, X: DataFrame, y: Series) -> DataFrame:
         if self.config.yieldoutliers_thr and y is not None:
             yield_by_acre = y / X['Acre']
@@ -179,10 +179,10 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
 
         return X
 
-
     def scale_area_columns(self, X: DataFrame) -> DataFrame:
         if self.config.scale != 'none':
-            X.loc[:, cst.processor['corr_area_cols']] = X[cst.processor['corr_area_cols']].divide(X[self.config.scale], axis='index')
+            X.loc[:, cst.processor['corr_area_cols']] = X[cst.processor['corr_area_cols']].divide(X[self.config.scale],
+                                                                                                  axis='index')
             X.drop(columns=self.config.scale, inplace=True)
 
         return X
