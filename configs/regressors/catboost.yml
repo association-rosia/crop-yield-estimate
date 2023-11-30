@@ -26,6 +26,10 @@ parameters:
     distribution: constant
     value: 500
 
+  use_llm_imputation:
+    distribution: categorical
+    values: [ True, False ]
+
   smote_augmentation:
     distribution: categorical
     values: [ True, False ]
