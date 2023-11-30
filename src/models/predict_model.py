@@ -28,7 +28,7 @@ cst = get_constants()
 def main():
     # Get run id
     predict_config = parse_args()
-    
+
     # Init ensemble strategy
     make_ensemble = init_ensemble_strategy(predict_config)
 
@@ -39,30 +39,32 @@ def main():
     list_predict += get_prediction(predict_config['medium_id'], 1, class_pred)
     list_predict += get_prediction(predict_config['high_id'], 2, class_pred)
     list_predict += get_prediction(predict_config['run_id'])
-    
+
     df = pd.concat(list_predict, axis='columns', join='outer')
-    
+
     # Apply ensemble strategy
     submission = make_ensemble(df)
-    
+
     # Create submisiion file to be uploaded to Zindi for scoring
     submission.name = 'Yield'
-    list_id = predict_config['run_id'] + predict_config['low_id'] +  predict_config['medium_id'] + predict_config['high_id']
-    file_name =  f'{"-".join(list_id)}-{predict_config["ensemble_strategy"]}.csv'
+    list_id = predict_config['run_id'] + predict_config['low_id'] + predict_config['medium_id'] + predict_config['high_id']
+    file_name = f'{"-".join(list_id)}-{predict_config["ensemble_strategy"]}.csv'
     file_submission = os.path.join(cst.path_submissions, file_name)
     submission.to_csv(file_submission, index=True)
-    
+
     return True
 
 
 def get_class_prediction(predict_config: dict) -> Series:
     list_predict_class = []
+
     for class_id in predict_config['class_id']:
         list_predict_class.append(predict(class_id))
+
     df = pd.concat(list_predict_class, axis='index')
     class_prediction = df.groupby('ID').median()
     class_prediction = class_prediction.idxmax(axis='columns')
-    
+
     return class_prediction
 
 
@@ -90,7 +92,7 @@ def init_ensemble_strategy(predict_config: dict):
         ensemble_strategy = mean_strategy
     if predict_config['ensemble_strategy'] == 'median':
         ensemble_strategy = median_strategy
-        
+
     return ensemble_strategy
 
 
@@ -109,7 +111,7 @@ def predict(run_id) -> Series | DataFrame:
 
     # Load train data
     df_train = get_train_data(run_config)
-    
+
     # Pre-process Train data
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     y_train = target_transformer.fit_transform(X_train, y_train)
@@ -125,8 +127,8 @@ def predict(run_id) -> Series | DataFrame:
     estimator.fit(X=X_train.to_numpy(), y=y_train.to_numpy())
 
     # Load test data
-    X_test = get_test_data()
-    
+    X_test = get_test_data(run_config)
+
     # Pre-process Test data
     target_transformer.fit(X_test)
     X_test = preprocessor.transform(X_test)
@@ -163,20 +165,24 @@ def parse_args() -> dict:
     # Run name
     parser.add_argument('--run_id', nargs='+', type=str, default=[],
                         help='ID of wandb run to use for submission. Give multiple IDs for ensemble submission.')
-    
+
     parser.add_argument('--class_id', nargs='+', type=str, default=[],
-                        help='ID of wandb run trained to classify data to use for submission. Give multiple IDs for ensemble submission.')
-    
+                        help='ID of wandb run trained to classify data to use for submission. Give multiple IDs for '
+                             'ensemble submission.')
+
     parser.add_argument('--low_id', nargs='+', type=str, default=[],
-                        help='ID of wandb run trained on low data to use for submission. Give multiple IDs for ensemble submission.')
-    
+                        help='ID of wandb run trained on low data to use for submission. Give multiple IDs for '
+                             'ensemble submission.')
+
     parser.add_argument('--medium_id', nargs='+', type=str, default=[],
-                        help='ID of wandb run trained on medium data to use for submission. Give multiple IDs for ensemble submission.')
-    
+                        help='ID of wandb run trained on medium data to use for submission. Give multiple IDs for '
+                             'ensemble submission.')
+
     parser.add_argument('--high_id', nargs='+', type=str, default=[],
-                        help='ID of wandb run trained on high data to use for submission. Give multiple IDs for ensemble submission.')
-    
-    parser.add_argument('--ensemble_strategy', type=str, default='mean', choices=['mean', 'median'], 
+                        help='ID of wandb run trained on high data to use for submission. Give multiple IDs for '
+                             'ensemble submission.')
+
+    parser.add_argument('--ensemble_strategy', type=str, default='mean', choices=['mean', 'median'],
                         help='Ensemble strategy to use. If classification is choised, the task runs must be '
                              'classification, reg_low, reg_medium, reg_high')
 

@@ -6,6 +6,7 @@ metric:
   goal: maximize
 
 parameters:
+
   random_state:
     distribution: constant
     value: 42
@@ -26,6 +27,10 @@ parameters:
     distribution: constant
     value: 500
 
+  use_llm_imputation:
+    distribution: categorical
+    values: [ True, False ]
+
   smote_augmentation:
     distribution: categorical
     values: [ True, False ]
@@ -35,8 +40,8 @@ parameters:
     values: [ True, False ]
 
   generated_file:
-    distribution: constant
-    value: 'TrainGenerated-6038.csv'
+    distribution: categorical
+    value: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
 
   max_target_by_acre:
     distribution: categorical

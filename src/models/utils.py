@@ -2,11 +2,12 @@ from sklearn.base import RegressorMixin, ClassifierMixin
 from sklearn.model_selection import KFold, StratifiedKFold
 from src.features.config import CYEConfigPreProcessor, CYEConfigTransformer
 from src.features.preprocessing import CYEPreProcessor, CYETargetTransformer
-from src.features.great.features.unprocessing import CYEGReaTProcessor
+from src.features.great.features.unprocessing import GReaTUnprocessor
 from src.utils import create_labels
 
 import pandas as pd
 import numpy as np
+import os
 
 from imblearn.over_sampling import SMOTE
 from imblearn.combine import SMOTEENN
@@ -111,14 +112,22 @@ def init_evaluation_metrics(run_config: dict):
     return evaluation_metrics
 
 
-def get_test_data() -> pd.DataFrame:
-    df_test = pd.read_csv(cst.file_data_test, index_col='ID')
+def get_test_data(run_config: dict) -> pd.DataFrame:
+    if run_config['use_llm_imputation']:
+        great_unprocessor = GReaTUnprocessor()
+        df_test = great_unprocessor.transform(generated_file_path=cst.file_data_test_imputed)
+    else:
+        df_test = pd.read_csv(cst.file_data_test, index_col='ID')
 
     return df_test
 
 
 def get_train_data(run_config: dict) -> pd.DataFrame:
-    df_train = pd.read_csv(cst.file_data_train, index_col='ID')
+    if run_config['use_llm_imputation']:
+        great_unprocessor = GReaTUnprocessor()
+        df_train = great_unprocessor.transform(generated_file_path=cst.file_data_train_imputed)
+    else:
+        df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
     if run_config['task'] in ['reg_h', 'reg_m', 'reg_l']:
         labels = create_labels(
@@ -139,13 +148,14 @@ def get_train_data(run_config: dict) -> pd.DataFrame:
 
 
 def get_gen_data(run_config: dict) -> pd.DataFrame:
-    great_processor = CYEGReaTProcessor(
+    great_unprocessor = GReaTUnprocessor(
         limit_h=run_config['limit_h'],
         limit_l=run_config['limit_l']
     )
 
-    df_gen = great_processor.transform(
-        generated_file=run_config['generated_file'],
+    generated_file_path = os.path.join(cst.path_generated_data, run_config['generated_file'])
+    df_gen = great_unprocessor.transform(
+        generated_file_path=generated_file_path,
         max_target_by_acre=run_config['max_target_by_acre']
     )
 

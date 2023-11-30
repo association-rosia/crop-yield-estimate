@@ -4,21 +4,19 @@ warnings.filterwarnings('ignore')
 import os
 import pandas as pd
 from datetime import datetime
-from sklearn.base import BaseEstimator, TransformerMixin
 from src.constants import get_constants
 import math
 
 cst = get_constants()
 
 
-class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
+class GReaTUnprocessor:
     def __init__(self, limit_h: int = None, limit_l: int = None) -> None:
         self.limit_h = limit_h
         self.limit_l = limit_l
 
-    def transform(self, generated_file: str = None, max_target_by_acre: float = None):
-        generated_path = os.path.join(cst.path_generated_data, generated_file)
-        df = pd.read_csv(generated_path)
+    def transform(self, generated_file_path: str = None, max_target_by_acre: float = None):
+        df = pd.read_csv(generated_file_path)
         df = self.filter(df, max_target_by_acre)
         df = self.one_hot_decoding(df)
         df = self.remove_wrong_date(df)
@@ -27,18 +25,19 @@ class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
         return df
 
     def filter(self, df, max_target_by_acre):
-        target_by_acre = df[cst.target_column] / df['Acre']
-        df.dropna(subset=[cst.target_column], inplace=True)
+        if cst.target_column in df.columns:
+            target_by_acre = df[cst.target_column] / df['Acre']
+            df.dropna(subset=[cst.target_column], inplace=True)
 
-        if max_target_by_acre:
-            df = df[target_by_acre <= max_target_by_acre]
+            if max_target_by_acre:
+                df = df[target_by_acre <= max_target_by_acre]
 
-        if self.limit_h and self.limit_l:
-            df = df[(target_by_acre > self.limit_h) | (target_by_acre < self.limit_l)]
-        elif self.limit_h:
-            df = df[target_by_acre > self.limit_h]
-        elif self.limit_l:
-            df = df[target_by_acre < self.limit_l]
+            if self.limit_h and self.limit_l:
+                df = df[(target_by_acre > self.limit_h) | (target_by_acre < self.limit_l)]
+            elif self.limit_h:
+                df = df[target_by_acre > self.limit_h]
+            elif self.limit_l:
+                df = df[target_by_acre < self.limit_l]
 
         return df
 
@@ -116,8 +115,8 @@ class CYEGReaTProcessor(BaseEstimator, TransformerMixin):
 
 
 if __name__ == '__main__':
-    great_processor = CYEGReaTProcessor()
-    generated_file = 'TrainGenerated-50000.csv'
-    df_gen = great_processor.transform(generated_file=generated_file)
+    great_unprocessor = GReaTUnprocessor()
+    generated_file_path = os.path.join(cst.path_interim_data, 'TestImputed.csv')
+    df_gen = great_unprocessor.transform(generated_file_path=generated_file_path)
 
     print()
