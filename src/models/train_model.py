@@ -152,7 +152,7 @@ def parse_args() -> dict:
     # Define the parameters
     parser = argparse.ArgumentParser(description=f'Train {cst.project} model')
     parser.add_argument('--dry', action='store_true', default=False, help='Enable or disable dry mode pipeline')
-    parser.add_argument('--debug', action='store_true', default=True,
+    parser.add_argument('--debug', action='store_true', default=False,
                         help='Run a single training using debug-config.yml (for debug purpose)')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM', 'CatBoost'],
                         help='Estimator to use')

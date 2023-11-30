@@ -1,77 +1,118 @@
+
 random_state:
-  desc: Seed to use
+  distribution: constant
   value: 42
 
 cv:
-  desc: Number of split in cross-validation
+  distribution: constant
   value: 5
 
-data_aug:
-  desc: Data augmentation strategy, 'smote'
-  value: 'none'
-
 task:
-  desc: Type of task applied
-  value: 'regression'
+  distribution: constant
+  value: 'classification'
 
 limit_h:
-  desc: Upper limit to create classes
+  distribution: constant
   value: 5000
 
 limit_l:
-  desc: Lower limit to create classes
+  distribution: constant
   value: 500
+
+use_llm_imputation:
+  distribution: categorical
+  values: [ True, False ]
+
+smote_augmentation:
+  distribution: categorical
+  values: [ True, False ]
+
+great_augmentation:
+  distribution: categorical
+  values: [ True, False ]
+
+generated_file:
+  distribution: categorical
+  values: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
+
+max_target_by_acre:
+  distribution: categorical
+  values: [ None, 25000 ]
 
 # Preprocessing
 delna_thr:
-  desc: Threshold of missiong values to delate columns
-  value: 0.5
+  distribution: uniform
+  min: 0
+  max: 1
 
 fillna:
-  desc: How to fill nan, 'none', 'KNNImputer', IterativeImputer
-  value: none
+  distribution: categorical
+  values: [ True, False ]
+
+scale:
+  distribution: constant
+  value: 'none'
 
 # Model
 estimator_name:
-  desc: model to use
+  distribution: constant
   value: 'XGBoost'
 
+eval_metric:
+  distribution: constant
+  value: 'logloss'
+
 n_estimators:
-  desc: Number of estimators
-  value: 500
+  distribution: int_uniform
+  min: 100
+  max: 1000
 
 learning_rate:
-  desc: Value of Learning rate
-  value: 0.001
+  distribution: uniform
+  min: 0
+  max: 1
 
 max_depth:
-  desc: Limit the max depth for tree model
-  value: 59
+  distribution: int_uniform
+  min: 1
+  max: 100
 
-min_data_in_leaf:
-  desc: Minimal number of data in one leaf
-  value: 50
+subsample:
+  distribution: uniform
+  min: 0
+  max: 1
 
-num_leaves:
-  desc: max number of leaves in one tree
-  value: 512
+colsample_bytree:
+  distribution: uniform
+  min: 0
+  max: 1
 
-subsample: # bagging_fraction
-  desc: This will randomly select part of data without resampling
-  value: 0.5
+colsample_bylevel:
+  distribution: uniform
+  min: 0
+  max: 1
 
-colsample_bytree: # feature_fraction
-  desc: LightGBM will randomly select a subset of features on each iteration
-  value: 0.5
+colsample_bynode:
+  distribution: uniform
+  min: 0
+  max: 1
+
+min_child_weight:
+  distribution: uniform
+  min: 1
+  max: 5
 
 reg_alpha:
-  desc: L1 regularization
-  value: 0
+  distribution: uniform
+  min: 0
+  max: 50
 
 reg_lambda:
-  desc: L2 regularization
-  value: 0
+  distribution: uniform
+  min: 0
+  max: 50
 
-verbose:
-  desc: Verbose of the model
-  value: -1
+gamma:
+  distribution: uniform
+  min: 0
+  max: 10

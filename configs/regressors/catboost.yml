@@ -56,7 +56,7 @@ parameters:
 
   fillna:
     distribution: categorical
-    values: [True, False]
+    values: [ True, False ]
 
   # Model
   loss_function:
