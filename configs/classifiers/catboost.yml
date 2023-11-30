@@ -5,8 +5,9 @@ metric:
   name: cls/f1-score
   goal: maximize
 
-parameters:
+run_cap: 10000
 
+parameters:
   random_state:
     distribution: constant
     value: 42
@@ -41,7 +42,7 @@ parameters:
 
   generated_file:
     distribution: categorical
-    value: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
+    values: [ 'TrainGenerated-6038.csv', 'TrainGeneratedImputed-6038.csv' ]
 
   max_target_by_acre:
     distribution: categorical
