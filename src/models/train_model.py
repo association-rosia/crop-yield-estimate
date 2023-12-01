@@ -52,7 +52,7 @@ def main():
 
 def create_sweep(script_config: dict) -> str:
     # Load sweep config
-    if script_config['task'] == 'regression':
+    if script_config['task'] in ['reg_l', 'reg_m', 'reg_h']:
         dir_config = 'regressors'
     elif script_config['task'] == 'classification':
         dir_config = 'classifiers'
@@ -63,6 +63,7 @@ def create_sweep(script_config: dict) -> str:
     with open(path_sweep, 'r') as file:
         sweep = yaml.safe_load(file)
 
+    sweep['parameters']['task'] = {'distribution': 'constant', 'value': script_config['task']}
     # Create sweep
     sweep_id = wandb.sweep(
         sweep=sweep,
@@ -156,8 +157,8 @@ def parse_args() -> dict:
                         help='Run a single training using debug-config.yml (for debug purpose)')
     parser.add_argument('--estimator_name', type=str, default='XGBoost', choices=['XGBoost', 'LightGBM', 'CatBoost'],
                         help='Estimator to use')
-    parser.add_argument('--task', type=str, default='classification', choices=['classification', 'regression'],
-                        help='Task to be performed')
+    parser.add_argument('--task', type=str, default='classification',
+                        choices=['classification', 'reg_l', 'reg_m', 'reg_h'], help='Task to be performed')
     parser.add_argument('--nb_agents', type=int, default=1, help='Number of agents to run')
 
     return parser.parse_args().__dict__

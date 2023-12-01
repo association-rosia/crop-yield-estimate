@@ -16,10 +16,6 @@ parameters:
     distribution: constant
     value: 5
 
-  task:
-    distribution: constant
-    value: 'classification'
-
   limit_h:
     distribution: constant
     value: 5000
