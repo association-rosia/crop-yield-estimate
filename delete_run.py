@@ -4,7 +4,7 @@ from tqdm import tqdm
 api = wandb.Api(timeout=60)
 runs = api.runs('association-rosia/crop-yield-estimate', per_page=500)
 
-while runs.length > 0:
+while True:
     try:
         for run in tqdm(runs):
             run.delete()
