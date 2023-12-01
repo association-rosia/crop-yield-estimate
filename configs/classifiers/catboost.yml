@@ -118,7 +118,7 @@ parameters:
     distribution: categorical
     values: ['No', 'AnyImprovement']
 
-  min_data_in_leaf:
+  min_child_samples:
     distribution: int_uniform
     min: 1
     max: 100

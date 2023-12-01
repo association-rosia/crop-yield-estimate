@@ -215,6 +215,11 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
         return X
 
     def make_consistent(self, X: DataFrame) -> DataFrame:
+        missing_cols = list(set(self.out_columns) - set(X.columns))
+
+        for missing_col in missing_cols:
+            X[missing_col] = 0
+
         X = X[self.out_columns]
 
         return X

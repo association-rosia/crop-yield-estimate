@@ -82,7 +82,7 @@ class LGBMConfig(BaseConfig):
                  n_estimators: int = None,
                  learning_rate: float = None,
                  max_depth: int = None,
-                 min_data_in_leaf: int = None,
+                 min_child_samples: int = None,
                  num_leaves: int = None,
                  subsample: float = None,
                  colsample_bytree: float = None,
@@ -95,7 +95,7 @@ class LGBMConfig(BaseConfig):
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.max_depth = max_depth
-        self.min_data_in_leaf = min_data_in_leaf
+        self.min_child_samples = min_child_samples
         self.num_leaves = num_leaves
         self.subsample = subsample
         self.colsample_bytree = colsample_bytree
@@ -118,7 +118,7 @@ class CATBConfig(BaseConfig):
                  grow_policy: str = None,
                  leaf_estimation_iterations: int = None,
                  leaf_estimation_backtracking: str = None,
-                 min_data_in_leaf: int = None,
+                 min_child_samples: int = None,
                  auto_class_weights: str = None,
                  max_leaves: int = None,
                  colsample_bylevel: float = None,
@@ -145,7 +145,7 @@ class CATBConfig(BaseConfig):
         self.grow_policy = grow_policy
         self.leaf_estimation_iterations = leaf_estimation_iterations
         self.leaf_estimation_backtracking = leaf_estimation_backtracking
-        self.min_data_in_leaf = min_data_in_leaf
+        self.min_child_samples = min_child_samples
         self.auto_class_weights = auto_class_weights
         self.max_leaves = max_leaves
         self.colsample_bylevel = colsample_bylevel

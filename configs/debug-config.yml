@@ -57,7 +57,7 @@ n_estimators:
 class_weight:
   value: 'balanced'
 
-min_data_in_leaf:
+min_child_samples:
   value: 50
 
 subsample: # bagging_fraction

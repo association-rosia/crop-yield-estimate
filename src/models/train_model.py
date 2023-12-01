@@ -100,11 +100,11 @@ def train():
     # Get run config as dict
     run_config = run.config.as_dict()
 
-    # Init pre-processor
-    preprocessor = init_preprocessor(run_config)
-
     # Init target transformer
     target_transformer = init_target_transformer(run_config)
+
+    # Init pre-processor
+    preprocessor = init_preprocessor(run_config)
 
     # Init estimator
     estimator = init_estimator(run_config)
@@ -121,7 +121,7 @@ def train():
     # Pre-process data
     X_train, y_train = df_train.drop(columns=cst.target_column), df_train[cst.target_column]
     y_train = target_transformer.fit_transform(X_train, y_train)
-    X_train = preprocessor.fit_transform(X_train)
+    X_train, y_train = preprocessor.fit_transform(X_train, y_train)
 
     # Cross-validate estimator
     y_pred = train_model(

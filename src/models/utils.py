@@ -189,11 +189,11 @@ def apply_smote(X, y) -> (pd.DataFrame, pd.Series):
 def apply_great(run_config: dict, X_train: np.ndarray, y_train: np.ndarray, target_transformer, preprocessor) -> (pd.DataFrame, pd.Series):
     df_gen = get_gen_data(run_config)
     X_gen, y_gen = df_gen.drop(columns=cst.target_column), df_gen[cst.target_column]
-    X_gen, y_gen = preprocessor.transform(X_gen, y_gen)
     y_gen = target_transformer.transform(y_gen)
+    X_gen, y_gen = preprocessor.transform(X_gen, y_gen)
 
-    X_train = pd.concat([X_train, X_gen], axis='columns')
-    y_train = pd.concat([y_train, y_gen], axis='columns')
+    X_train = np.concatenate((X_train, X_gen.to_numpy()), axis=0)
+    y_train = np.concatenate((y_train, y_gen.to_numpy()), axis=0)
 
     return X_train, y_train
 

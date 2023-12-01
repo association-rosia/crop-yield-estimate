@@ -91,7 +91,7 @@ parameters:
     distribution: constant
     value: 'balanced'
 
-  min_data_in_leaf:
+  min_child_samples:
     distribution: int_uniform
     min: 1
     max: 100
