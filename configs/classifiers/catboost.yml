@@ -121,7 +121,7 @@ parameters:
 
   auto_class_weights:
     distribution: constant
-    values: 'Balanced'
+    value: 'Balanced'
 
   max_leaves:
     distribution: int_uniform
