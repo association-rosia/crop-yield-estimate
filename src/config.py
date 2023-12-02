@@ -46,7 +46,7 @@ class BaseConfig:
         return out
 
 
-class XGBConfig(BaseConfig):
+class XGBoostConfig(BaseConfig):
     def __init__(self,
                  eval_metric: str = None,
                  n_estimators: int = None,
@@ -76,7 +76,7 @@ class XGBConfig(BaseConfig):
         self.gamma = gamma
 
 
-class LGBMConfig(BaseConfig):
+class LightGBMConfig(BaseConfig):
     def __init__(self,
                  metric: str = None,
                  n_estimators: int = None,
@@ -107,7 +107,6 @@ class LGBMConfig(BaseConfig):
 class CatBoostConfig(BaseConfig):
     def __init__(self,
                  loss_function: str = None,
-                 estimator_name: str = None,
                  n_estimators: int = None,
                  learning_rate: float = None,
                  reg_lambda: float = None,
@@ -133,7 +132,6 @@ class CatBoostConfig(BaseConfig):
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.loss_function = loss_function
-        self.estimator_name = estimator_name
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.reg_lambda = reg_lambda

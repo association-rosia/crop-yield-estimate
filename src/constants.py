@@ -4,7 +4,7 @@ import GPUtil
 from lightgbm import LGBMRegressor, LGBMClassifier
 from xgboost import XGBRegressor, XGBClassifier
 from catboost import CatBoostRegressor, CatBoostClassifier
-from src.config import XGBConfig, LGBMConfig, CatBoostConfig
+from src.config import XGBoostConfig, LightGBMConfig, CatBoostConfig
 
 
 class CYEConstants:
@@ -84,11 +84,11 @@ class CYEConstants:
     def init_reg_estimators():
         reg_estimators = {
             'XGBoost': {
-                'config': XGBConfig,
+                'config': XGBoostConfig,
                 'estimator': XGBRegressor
             },
             'LightGBM': {
-                'config': LGBMConfig,
+                'config': LightGBMConfig,
                 'estimator': LGBMRegressor
             },
             'CatBoost': {
@@ -103,11 +103,11 @@ class CYEConstants:
     def init_cls_estimators():
         cls_estimators = {
             'XGBoost': {
-                'config': XGBConfig,
+                'config': XGBoostConfig,
                 'estimator': XGBClassifier
             },
             'LightGBM': {
-                'config': LGBMConfig,
+                'config': LightGBMConfig,
                 'estimator': LGBMClassifier
             },
             'CatBoost': {
