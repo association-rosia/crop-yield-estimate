@@ -207,7 +207,7 @@ def train_model(run_config: dict, estimator, X: np.ndarray, y: np.ndarray, cv, t
         if run_config['great_augmentation']:
             X_train, y_train = apply_great(run_config, X_train, y_train, target_transformer, preprocessor)
 
-        if run_config['smote_augmentation'] and run_config['fillna']:
+        if run_config['smote_augmentation'] and run_config['fillna'] != 'none':
             X_train, y_train = apply_smote(X_train, y_train)
 
         estimator.fit(X_train, y_train)
