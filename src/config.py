@@ -104,7 +104,7 @@ class LGBMConfig(BaseConfig):
         self.verbose = verbose
 
 
-class CATBConfig(BaseConfig):
+class CatBoostConfig(BaseConfig):
     def __init__(self,
                  loss_function: str = None,
                  estimator_name: str = None,

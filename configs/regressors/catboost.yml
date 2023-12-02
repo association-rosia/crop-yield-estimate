@@ -80,7 +80,7 @@ parameters:
 
   bootstrap_type:
     distribution: categorical
-    values: ['Bayesian', 'Bernoulli', 'MVS']
+    values: [ 'Bayesian', 'Bernoulli', 'MVS' ]
 
   bagging_temperature:
     distribution: uniform
@@ -99,7 +99,7 @@ parameters:
 
   grow_policy:
     distribution: categorical
-    values: ['SymmetricTree', 'Depthwise', 'Lossguide']
+    values: [ 'SymmetricTree', 'Depthwise', 'Lossguide' ]
 
   leaf_estimation_iterations:
     distribution: int_uniform
@@ -108,7 +108,7 @@ parameters:
 
   leaf_estimation_backtracking:
     distribution: categorical
-    values: ['No', 'AnyImprovement']
+    values: [ 'No', 'AnyImprovement' ]
 
   min_child_samples:
     distribution: int_uniform
@@ -131,15 +131,15 @@ parameters:
 
   boosting_type:
     distribution: categorical
-    values: ['Plain', 'Ordered']
+    values: [ 'Plain', 'Ordered' ]
 
   boosting_from_average:
     distribution: categorical
-    values: [True, False]
+    values: [ True, False ]
 
   langevin:
     distribution: categorical
-    values: [True, False]
+    values: [ True, False ]
 
   diffusion_temperature:
     distribution: int_uniform
@@ -148,7 +148,7 @@ parameters:
 
   score_function:
     distribution: categorical
-    values: ['L2', 'NewtonL2']
+    values: [ 'L2', 'NewtonL2' ]
 
   penalties_coefficient:
     distribution: uniform
@@ -161,5 +161,5 @@ parameters:
     max: 1
 
   model_shrink_mode:
-    distribution: uniform
-    values: ['Constant', 'Decreasing']
+    distribution: categorical
+    values: [ 'Constant', 'Decreasing' ]
