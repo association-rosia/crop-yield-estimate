@@ -6,6 +6,7 @@ sys.path.append(os.curdir)
 
 import pandas as pd
 from pandas import DataFrame, Series
+import numpy as np
 
 import wandb
 from wandb.apis.public import Run
@@ -61,10 +62,12 @@ def get_class_prediction(predict_config: dict) -> Series:
     for class_id in predict_config['class_id']:
         list_predict_class.append(predict(class_id))
 
-    df = pd.concat(list_predict_class, axis='index')
-    class_prediction = df.groupby('ID').median()
-    class_prediction = class_prediction.idxmax(axis='columns')
-
+    if list_predict_class:
+        df = pd.concat(list_predict_class, axis='index')
+        class_prediction = df.groupby('ID').median()
+        class_prediction = class_prediction.idxmax(axis='columns')
+    else: 
+        class_prediction = Series([])
     return class_prediction
 
 
@@ -126,7 +129,7 @@ def predict(run_id) -> Series | DataFrame:
     if run_config['smote_augmentation']:
         X_train, y_train = apply_smote(X_train, y_train)
 
-    estimator.fit(X=X_train.to_numpy(), y=y_train.to_numpy())
+    estimator.fit(X=X_train, y=y_train)
 
     # Load test data
     X_test = get_test_data(run_config)
@@ -141,6 +144,7 @@ def predict(run_id) -> Series | DataFrame:
         y_pred = DataFrame(y_pred, index=X_test.index)
     else:
         y_pred = estimator.predict(X=X_test.to_numpy())
+        y_pred = y_pred.reshape(-1) # Flatten for catboost
         y_pred = Series(y_pred, index=X_test.index)
 
     y_pred = target_transformer.inverse_transform(y_pred)

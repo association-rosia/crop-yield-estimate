@@ -21,28 +21,12 @@ class BaseConfig:
 
         return sorted([p.name for p in parameters])
 
-    def get_params(self, deep=True):
-        """
-        Get parameters for this configuration.
-
-        Parameters
-        ----------
-        deep : bool, default=True
-            If True, will return the parameters for this estimator and
-            contained subobjects that are estimators.
-
-        Returns
-        -------
-        params : dict
-            Parameter names mapped to their values.
-        """
+    def get_params(self):
         out = dict()
         for key in self._get_param_names():
-            value = getattr(self, key)
-            if deep and hasattr(value, "get_params") and not isinstance(value, type):
-                deep_items = value.get_params().items()
-                out.update((key + "__" + k, val) for k, val in deep_items)
-            out[key] = value
+            value = getattr(self, key, None)
+            if value is not None:
+                out[key] = value
         return out
 
 
@@ -111,24 +95,21 @@ class CatBoostConfig(BaseConfig):
                  learning_rate: float = None,
                  reg_lambda: float = None,
                  bootstrap_type: str = None,
-                 bagging_temperature: float = None,
                  subsample: float = None,
                  max_depth: int = None,
                  grow_policy: str = None,
                  leaf_estimation_iterations: int = None,
                  leaf_estimation_backtracking: str = None,
-                 min_child_samples: int = None,
                  auto_class_weights: str = None,
-                 max_leaves: int = None,
                  colsample_bylevel: float = None,
                  nan_mode: str = None,
-                 boosting_type: str = None,
                  langevin: bool = None,
                  diffusion_temperature: int = None,
                  score_function: str = None,
                  penalties_coefficient: float = None,
                  model_shrink_rate: float = None,
                  model_shrink_mode: str = None,
+                 verbose: int = None,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.loss_function = loss_function
@@ -136,21 +117,19 @@ class CatBoostConfig(BaseConfig):
         self.learning_rate = learning_rate
         self.reg_lambda = reg_lambda
         self.bootstrap_type = bootstrap_type
-        self.bagging_temperature = bagging_temperature
         self.subsample = subsample
         self.max_depth = max_depth
         self.grow_policy = grow_policy
         self.leaf_estimation_iterations = leaf_estimation_iterations
         self.leaf_estimation_backtracking = leaf_estimation_backtracking
-        self.min_child_samples = min_child_samples
-        self.auto_class_weights = auto_class_weights
-        self.max_leaves = max_leaves
+        if loss_function != 'RMSE':
+            self.auto_class_weights = auto_class_weights
         self.colsample_bylevel = colsample_bylevel
         self.nan_mode = nan_mode
-        self.boosting_type = boosting_type
         self.langevin = langevin
         self.diffusion_temperature = diffusion_temperature
         self.score_function = score_function
         self.penalties_coefficient = penalties_coefficient
         self.model_shrink_rate = model_shrink_rate
         self.model_shrink_mode = model_shrink_mode
+        self.verbose = verbose

@@ -211,6 +211,8 @@ def train_model(run_config: dict, estimator, X: np.ndarray, y: np.ndarray, cv, t
             X_train, y_train = apply_smote(X_train, y_train)
 
         estimator.fit(X_train, y_train)
-        y_pred[val_idx] = estimator.predict(X_val)
+        sub_y_pred = estimator.predict(X_val)
+        sub_y_pred = sub_y_pred.reshape(-1) # Flatten for CatBoost
+        y_pred[val_idx] = sub_y_pred
 
     return y_pred
