@@ -52,7 +52,7 @@ parameters:
 
   fillna:
     distribution: categorical
-    values: [ True, False ]
+    values: [ 'none', 'KNNImputer', 'IterativeImputer' ]
 
   scale:
     distribution: categorical
