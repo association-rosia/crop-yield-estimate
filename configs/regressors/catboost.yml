@@ -5,7 +5,7 @@ metric:
   name: reg/rmse
   goal: minimize
 
-run_cap: 5000
+run_cap: 1000
 
 parameters:
   random_state:
