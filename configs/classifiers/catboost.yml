@@ -52,7 +52,7 @@ parameters:
 
   fillna:
     distribution: categorical
-    values: [ 'none', 'KNNImputer', 'IterativeImputer' ]
+    values: [ 'KNNImputer', 'IterativeImputer' ]
 
   scale:
     distribution: constant
@@ -60,8 +60,8 @@ parameters:
 
   # Model
   loss_function:
-    distribution: constant
-    value: 'CrossEntropy'
+    distribution: categorical
+    values: [ 'MultiClass', 'MultiClassOneVsAll' ]
   
   estimator_name:
     distribution: constant
@@ -86,20 +86,10 @@ parameters:
     distribution: categorical
     values: [ 'Bayesian', 'Bernoulli', 'MVS' ]
 
-  bagging_temperature:
-    distribution: uniform
-    min: 0
-    max: 1
-
-  subsample: # bagging_fraction
-    distribution: uniform
-    min: 0
-    max: 1
-
   max_depth:
     distribution: int_uniform
-    min: 1
-    max: 100
+    min: 4
+    max: 10
 
   grow_policy:
     distribution: categorical
@@ -114,19 +104,14 @@ parameters:
     distribution: categorical
     values: [ 'No', 'AnyImprovement' ]
 
-  min_child_samples:
-    distribution: int_uniform
-    min: 1
-    max: 100
-
   auto_class_weights:
     distribution: constant
     value: 'Balanced'
 
-  max_leaves:
-    distribution: int_uniform
-    min: 2
-    max: 1024
+  # max_leaves:
+  #   distribution: int_uniform
+  #   min: 2
+  #   max: 64
 
   colsample_bylevel:
     distribution: uniform
@@ -137,9 +122,9 @@ parameters:
     distribution: constant
     value: 'Forbidden'
 
-  boosting_type:
-    distribution: categorical
-    values: [ 'Plain', 'Ordered' ]
+  # boosting_type:
+  #   distribution: categorical
+  #   values: [ 'Plain', 'Ordered' ]
 
   langevin:
     distribution: categorical
@@ -147,12 +132,12 @@ parameters:
 
   diffusion_temperature:
     distribution: int_uniform
-    min: 0
+    min: 1
     max: 100000
 
   score_function:
-    distribution: categorical
-    values: [ 'L2', 'NewtonL2' ]
+    distribution: constant
+    value: 'L2'
 
   penalties_coefficient:
     distribution: uniform
@@ -167,3 +152,7 @@ parameters:
   model_shrink_mode:
     distribution: categorical
     values: [ 'Constant', 'Decreasing' ]
+
+  verbose:
+    distribution: constant
+    value: 0
