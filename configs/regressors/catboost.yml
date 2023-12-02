@@ -29,8 +29,8 @@ parameters:
     values: [ True, False ]
 
   smote_augmentation:
-    distribution: categorical
-    values: [ True, False ]
+    distribution: constant
+    value:  False
 
   great_augmentation:
     distribution: categorical

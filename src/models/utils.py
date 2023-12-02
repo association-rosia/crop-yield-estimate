@@ -177,7 +177,7 @@ def get_gen_data(run_config: dict) -> pd.DataFrame:
     return df_gen
 
 
-def apply_smote(X, y) -> (pd.DataFrame, pd.Series):
+def apply_smote(run_config, X, y) -> (pd.DataFrame, pd.Series):
     k_neighbors = np.unique(y, return_counts=True)[1][2] - 1
     smote = SMOTE(k_neighbors=k_neighbors)
     smote_enn = SMOTEENN(smote=smote)
@@ -186,7 +186,8 @@ def apply_smote(X, y) -> (pd.DataFrame, pd.Series):
     return X, y
 
 
-def apply_great(run_config: dict, X_train: np.ndarray, y_train: np.ndarray, target_transformer, preprocessor) -> (pd.DataFrame, pd.Series):
+def apply_great(run_config: dict, X_train: np.ndarray, y_train: np.ndarray, target_transformer, preprocessor) -> (
+        pd.DataFrame, pd.Series):
     df_gen = get_gen_data(run_config)
     X_gen, y_gen = df_gen.drop(columns=cst.target_column), df_gen[cst.target_column]
     y_gen = target_transformer.transform(y_gen)
@@ -208,11 +209,11 @@ def train_model(run_config: dict, estimator, X: np.ndarray, y: np.ndarray, cv, t
             X_train, y_train = apply_great(run_config, X_train, y_train, target_transformer, preprocessor)
 
         if run_config['smote_augmentation'] and run_config['fillna'] != 'none':
-            X_train, y_train = apply_smote(X_train, y_train)
+            X_train, y_train = apply_smote(run_config, X_train, y_train)
 
         estimator.fit(X_train, y_train)
         sub_y_pred = estimator.predict(X_val)
-        sub_y_pred = sub_y_pred.reshape(-1) # Flatten for CatBoost
+        sub_y_pred = sub_y_pred.reshape(-1)  # flatten for CatBoost
         y_pred[val_idx] = sub_y_pred
 
     return y_pred
