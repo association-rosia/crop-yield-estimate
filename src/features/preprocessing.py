@@ -193,8 +193,8 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
             is_in = any([cl_col in col for cl_col in cst.processor['cat_cols'] + cst.processor['list_cols']])
 
             if is_in:
-                X[col] = X[col].astype(int)
                 X[col] = np.where(X[col] > 0.5, 1, 0)
+                X[col] = X[col].astype(int)
 
         return X
 

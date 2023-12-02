@@ -51,21 +51,21 @@ parameters:
     max: 1
 
   fillna:
-    distribution: categorical
-    values: [ 'KNNImputer', 'IterativeImputer' ]
+    distribution: constant
+    value: 'KNNImputer'
 
   scale:
     distribution: constant
     value: 'none'
 
   # Model
-  loss_function:
-    distribution: categorical
-    values: [ 'MultiClass', 'MultiClassOneVsAll' ]
-  
   estimator_name:
     distribution: constant
     value: 'CatBoost'
+
+  loss_function:
+    distribution: categorical
+    values: [ 'MultiClass', 'MultiClassOneVsAll' ]
 
   n_estimators:
     distribution: int_uniform
@@ -108,11 +108,6 @@ parameters:
     distribution: constant
     value: 'Balanced'
 
-  # max_leaves:
-  #   distribution: int_uniform
-  #   min: 2
-  #   max: 64
-
   colsample_bylevel:
     distribution: uniform
     min: 0
@@ -121,10 +116,6 @@ parameters:
   nan_mode:
     distribution: constant
     value: 'Forbidden'
-
-  # boosting_type:
-  #   distribution: categorical
-  #   values: [ 'Plain', 'Ordered' ]
 
   langevin:
     distribution: categorical

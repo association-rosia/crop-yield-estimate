@@ -51,17 +51,21 @@ parameters:
     max: 1
 
   fillna:
-    distribution: categorical
-    values: [ 'none', 'KNNImputer', 'IterativeImputer' ]
+    distribution: constant
+    value: 'KNNImputer'
+
+  scale:
+    distribution: constant
+    value: 'none'
 
   # Model
-  loss_function:
-    distribution: constant
-    value: 'RMSE'
-  
   estimator_name:
     distribution: constant
     value: 'CatBoost'
+
+  loss_function:
+    distribution: constant
+    value: 'RMSE'
 
   n_estimators:
     distribution: int_uniform
