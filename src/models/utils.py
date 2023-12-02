@@ -191,7 +191,6 @@ def apply_great(run_config: dict, X_train: np.ndarray, y_train: np.ndarray, targ
     X_gen, y_gen = df_gen.drop(columns=cst.target_column), df_gen[cst.target_column]
     y_gen = target_transformer.transform(y_gen)
     X_gen, y_gen = preprocessor.transform(X_gen, y_gen)
-
     X_train = np.concatenate((X_train, X_gen.to_numpy()), axis=0)
     y_train = np.concatenate((y_train, y_gen.to_numpy()), axis=0)
 
@@ -208,7 +207,7 @@ def train_model(run_config: dict, estimator, X: np.ndarray, y: np.ndarray, cv, t
         if run_config['great_augmentation']:
             X_train, y_train = apply_great(run_config, X_train, y_train, target_transformer, preprocessor)
 
-        if run_config['smote_augmentation']:
+        if run_config['smote_augmentation'] and run_config['fillna']:
             X_train, y_train = apply_smote(X_train, y_train)
 
         estimator.fit(X_train, y_train)
