@@ -124,7 +124,6 @@ class CatBoostConfig(BaseConfig):
                  colsample_bylevel: float = None,
                  nan_mode: str = None,
                  boosting_type: str = None,
-                 boosting_from_average: bool = None,
                  langevin: bool = None,
                  diffusion_temperature: int = None,
                  score_function: str = None,
@@ -151,7 +150,6 @@ class CatBoostConfig(BaseConfig):
         self.colsample_bylevel = colsample_bylevel
         self.nan_mode = nan_mode
         self.boosting_type = boosting_type
-        self.boosting_from_average = boosting_from_average
         self.langevin = langevin
         self.diffusion_temperature = diffusion_temperature
         self.score_function = score_function
