@@ -163,7 +163,7 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
         return X, y
 
     def fill_missing_values(self, X: DataFrame) -> DataFrame:
-        if self.config.fillna != 'none':
+        if self.config.fillna != 'none' and len(X) > 0:
             X = pd.DataFrame(self.imputer.transform(X), index=X.index, columns=X.columns)
             X = self.fix_nan_bias(X)
 
