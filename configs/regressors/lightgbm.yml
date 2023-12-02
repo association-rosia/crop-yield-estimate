@@ -42,7 +42,7 @@ parameters:
 
   max_target_by_acre:
     distribution: categorical
-    values: [ None, 25000 ]
+    values: [ 'none', 25000 ]
 
   # Preprocessing
   delna_thr:

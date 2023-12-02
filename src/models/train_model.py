@@ -64,6 +64,7 @@ def create_sweep(script_config: dict) -> str:
         sweep = yaml.safe_load(file)
 
     sweep['parameters']['task'] = {'distribution': 'constant', 'value': script_config['task']}
+
     # Create sweep
     sweep_id = wandb.sweep(
         sweep=sweep,
@@ -100,6 +101,8 @@ def train():
 
     # Get run config as dict
     run_config = run.config.as_dict()
+    if run_config['max_target_by_acre'] == 'none':
+        run_config['max_target_by_acre'] = None
 
     # Init target transformer
     target_transformer = init_target_transformer(run_config)

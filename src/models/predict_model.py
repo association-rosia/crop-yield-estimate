@@ -99,6 +99,8 @@ def init_ensemble_strategy(predict_config: dict):
 def predict(run_id) -> Series | DataFrame:
     # Get run config
     run_config = get_run_config(run_id)
+    if run_config['max_target_by_acre'] == 'none':
+        run_config['max_target_by_acre'] = None
 
     # Init pre-processor
     preprocessor = init_preprocessor(run_config)

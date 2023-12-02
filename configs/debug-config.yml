@@ -1,11 +1,38 @@
-random_state:
-  value: 42
+colsample_bylevel:
+  value: 0.26920740806843446
+
+colsample_bynode:
+  value: 0.840736071896449
+
+colsample_bytree:
+  value: 0.2729381050313101
 
 cv:
   value: 5
 
-task:
-  value: 'classification'
+delna_thr:
+  value: 0.6330754857432224
+
+estimator_name:
+  value: "XGBoost"
+
+eval_metric:
+  value: "logloss"
+
+fillna:
+  value: true
+
+gamma:
+  value: 7.157743571689607
+
+generated_file:
+  value: "TrainGenerated-6038.csv"
+
+great_augmentation:
+  value: true
+
+learning_rate:
+  value: 0.6427068091075152
 
 limit_h:
   value: 5000
@@ -13,64 +40,38 @@ limit_h:
 limit_l:
   value: 500
 
-use_llm_imputation:
-  value: True
-
-smote_augmentation:
-  value: True
-
-great_augmentation:
-  value: True
-
-generated_file:
-  value: 'TrainGenerated-6038.csv'
+max_depth:
+  value: 3
 
 max_target_by_acre:
-  value: 25000
+  value: "none"
 
-# Preprocessing
-delna_thr:
-  value: 0.5
-
-fillna:
-  value: True
-
-scale:
-  value: 'none'
-
-# Model
-estimator_name:
-  value: 'LightGBM'
-
-num_leaves:
-  value: 128
-
-max_depth:
-  value: 8
-
-learning_rate:
-  value: 0.5
+min_child_weight:
+  value: 3.95564392051145
 
 n_estimators:
-  value: 500
+  value: 276
 
-class_weight:
-  value: 'balanced'
-
-min_child_samples:
-  value: 50
-
-subsample: # bagging_fraction
-  value: 0.5
-
-colsample_bytree: # feature_fraction
-  value: 0.5
+random_state:
+  value: 42
 
 reg_alpha:
-  value: 5
+  value: 21.35569543418578
 
 reg_lambda:
-  value: 5
+  value: 20.72196075591198
 
-verbose:
-  value: -1
+scale:
+  value: "none"
+
+smote_augmentation:
+  value: false
+
+subsample:
+  value: 0.21286349842483931
+
+task:
+  value: "classification"
+
+use_llm_imputation:
+  value: false
