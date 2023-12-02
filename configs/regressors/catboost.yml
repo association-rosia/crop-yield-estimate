@@ -133,10 +133,6 @@ parameters:
     distribution: categorical
     values: [ 'Plain', 'Ordered' ]
 
-  boosting_from_average:
-    distribution: categorical
-    values: [ True, False ]
-
   langevin:
     distribution: categorical
     values: [ True, False ]
