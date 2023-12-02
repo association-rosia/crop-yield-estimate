@@ -134,8 +134,11 @@ class CYEPreProcessor(BaseEstimator, TransformerMixin):
         for col in cst.processor['cat_cols']:
             ohe_col = pd.get_dummies(X[col], prefix=col, prefix_sep='', dummy_na=True, drop_first=True)
             ohe_col = ohe_col.rename(columns={f'{col}<NA>': f'{col}nan'}).astype(np.uint8)
-            ohe_col.loc[ohe_col[f'{col}nan'] == 1] = np.nan
-            ohe_col.drop(columns=f'{col}nan', inplace=True)
+
+            if f'{col}nan' in ohe_col:
+                ohe_col.loc[ohe_col[f'{col}nan'] == 1] = np.nan
+                ohe_col.drop(columns=f'{col}nan', inplace=True)
+
             X = X.join(ohe_col)
             X.drop(columns=col, inplace=True)
 
