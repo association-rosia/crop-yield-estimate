@@ -6,7 +6,6 @@ sys.path.append(os.curdir)
 
 import pandas as pd
 from pandas import DataFrame, Series
-import numpy as np
 
 import wandb
 from wandb.apis.public import Run
@@ -48,7 +47,8 @@ def main():
 
     # Create submisiion file to be uploaded to Zindi for scoring
     submission.name = 'Yield'
-    list_id = predict_config['run_id'] + predict_config['class_id'] + predict_config['low_id'] + predict_config['medium_id'] + predict_config['high_id']
+    list_id = predict_config['run_id'] + predict_config['class_id'] + predict_config['low_id'] + predict_config[
+        'medium_id'] + predict_config['high_id']
     file_name = f'{"-".join(list_id)}-{predict_config["ensemble_strategy"]}.csv'
     file_submission = os.path.join(cst.path_submissions, file_name)
     submission.to_csv(file_submission, index=True)
@@ -66,7 +66,7 @@ def get_class_prediction(predict_config: dict) -> Series:
         df = pd.concat(list_predict_class, axis='index')
         class_prediction = df.groupby('ID').median()
         class_prediction = class_prediction.idxmax(axis='columns')
-    else: 
+    else:
         class_prediction = Series([])
     return class_prediction
 
@@ -143,13 +143,12 @@ def predict(run_id) -> Series | DataFrame:
         y_pred = estimator.predict_proba(X=X_test.to_numpy())
         y_pred = DataFrame(y_pred, index=X_test.index)
     else:
-        
         y_pred = estimator.predict(X_test.to_numpy())
-        y_pred = y_pred.reshape(-1) # Flatten for catboost
+        y_pred = y_pred.reshape(-1)  # Flatten for catboost
         y_pred = Series(y_pred, index=X_test.index)
 
     y_pred = target_transformer.inverse_transform(y_pred)
-    
+
     return y_pred
 
 

@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime
 from src.constants import get_constants
 import math
+import numpy as np
 
 cst = get_constants()
 
@@ -15,12 +16,12 @@ class GReaTUnprocessor:
         self.limit_h = limit_h
         self.limit_l = limit_l
 
-    def transform(self, generated_file_path: str = None, max_target_by_acre: float = None):
+    def transform(self, generated_file_path: str = None, split: str = None, max_target_by_acre: float = None):
         df = pd.read_csv(generated_file_path)
         df = self.filter(df, max_target_by_acre)
         df = self.one_hot_decoding(df)
-        df = self.remove_wrong_date(df)
-        df = self.remove_wrong_cat(df)
+        df = self.remove_wrong_date(df, split)
+        df = self.remove_wrong_cat(df, split)
 
         return df
 
@@ -87,29 +88,73 @@ class GReaTUnprocessor:
 
         return is_valid
 
-    def remove_wrong_date(self, df):
-        df['isValid'] = df.apply(lambda row: self.is_valid_date(row), axis='columns')
-        df = df[df['isValid']]
-        df.drop(columns='isValid', inplace=True)
+    def replace_date(self, date):
+        is_valid = True
+        date_format = '%Y-%m-%d'
+
+        if not self.isnan(date):
+            try:
+                date = datetime.strptime(date, date_format)
+
+                if date.year > 2023:
+                    is_valid = False
+
+            except Exception as e:
+                is_valid = False
+
+        if not is_valid:
+            date = np.nan
+
+        return date
+
+    def remove_wrong_date(self, df, split):
+        if split == 'train':
+            df['isValid'] = df.apply(lambda row: self.is_valid_date(row), axis='columns')
+            df = df[df['isValid']]
+            df.drop(columns='isValid', inplace=True)
+        elif split == 'test':
+            for col in cst.processor['date_cols']:
+                df[col] = df[col].apply(lambda date: self.replace_date(date))
+        else:
+            raise ValueError
 
         return df
 
     @staticmethod
-    def is_valid_cat(row, df_train):
+    def is_valid_cat(row, df_train_test):
         for col in cst.processor['cat_cols']:
             if 'Year' not in col:
-                valid_values = df_train[col].unique().tolist()
+                valid_values = df_train_test[col].unique().tolist()
 
                 if row[col] not in valid_values:
                     return False
 
         return True
 
-    def remove_wrong_cat(self, df):
+    @staticmethod
+    def replace_cat(cat, series_train_test):
+        valid_values = series_train_test.unique().tolist()
+
+        if cat not in valid_values:
+            cat = np.nan
+
+        return cat
+
+    def remove_wrong_cat(self, df, split):
         df_train = pd.read_csv(os.path.join(cst.file_data_train), index_col='ID')
-        df['isValid'] = df.apply(lambda row: self.is_valid_cat(row, df_train), axis='columns')
-        df = df[df['isValid']]
-        df.drop(columns='isValid', inplace=True)
+        df_test = pd.read_csv(os.path.join(cst.file_data_test), index_col='ID')
+        df_train_test = pd.concat([df_train, df_test], axis='rows')
+
+        if split == 'train':
+            df['isValid'] = df.apply(lambda row: self.is_valid_cat(row, df_train_test), axis='columns')
+            df = df[df['isValid']]
+            df.drop(columns='isValid', inplace=True)
+        elif split == 'test':
+            for col in cst.processor['cat_cols']:
+                if 'Year' not in col:
+                    df[col] = df[col].apply(lambda cat: self.replace_cat(cat, df_train_test[col]))
+        else:
+            raise ValueError
 
         return df
 
@@ -117,6 +162,6 @@ class GReaTUnprocessor:
 if __name__ == '__main__':
     great_unprocessor = GReaTUnprocessor()
     generated_file_path = os.path.join(cst.path_interim_data, 'TestImputed.csv')
-    df_gen = great_unprocessor.transform(generated_file_path=generated_file_path)
+    df_gen = great_unprocessor.transform(generated_file_path=generated_file_path, split='test')
 
     print()
