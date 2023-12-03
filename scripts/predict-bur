@@ -1,0 +1,5 @@
+python src/models/predict_model.py --ensemble_strategy median --class_id 7zoug4cg l6056qhi r6ezvdpa --low_id yu785kip 3wsk738d kb03qi3a --medium_id br0cjrme pp4eh625 u0nvswne --high_id t0twqec6 aaqzl3il ggwvyzag
+python src/models/predict_model.py --ensemble_strategy median --class_id mcdrqcxa l6056qhi 7zoug4cg --low_id yu785kip q7j2lwvt n0zhjqwg --medium_id br0cjrme o2il3r57 u0nvswne --high_id t0twqec6 31x3lynh aaqzl3il
+python src/models/predict_model.py --ensemble_strategy median --class_id mcdrqcxa rc42l9km on16h0h9 --low_id yu785kip 3wsk738d kb03qi3a --medium_id br0cjrme pp4eh625 5d6xlc0k --high_id t0twqec6 jtxphhin edd5zaza
+python src/models/predict_model.py --ensemble_strategy median --class_id l6056qhi 70hwb3ur oinrlfl5 --low_id q7j2lwvt zo8nsphf nvl1uuk5 --medium_id o2il3r57 kq4ui1yf 5s4w0ic7 --high_id 31x3lynh 6aikauea g9pbh0k8
+python src/models/predict_model.py --ensemble_strategy median --class_id 7zoug4cg r6ezvdpa x30on2xh --low_id n0zhjqwg 9p39in17 1ybbr0lx --medium_id u0nvswne xnd1x2fx pl2dj62l --high_id aaqzl3il ggwvyzag 4zvq0g8f
