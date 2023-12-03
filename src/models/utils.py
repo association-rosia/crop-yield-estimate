@@ -116,6 +116,9 @@ def get_test_data(run_config: dict) -> pd.DataFrame:
     if run_config['use_llm_imputation']:
         great_unprocessor = GReaTUnprocessor()
         df_test = great_unprocessor.transform(generated_file_path=cst.file_data_test_imputed)
+        index = pd.read_csv(cst.file_data_test)
+        df_test['ID'] = index['ID'].copy(deep=True)
+        df_test.set_index('ID', drop=True, inplace=True)
     else:
         df_test = pd.read_csv(cst.file_data_test, index_col='ID')
 
