@@ -115,7 +115,7 @@ def init_evaluation_metrics(run_config: dict):
 def get_test_data(run_config: dict) -> pd.DataFrame:
     if run_config['use_llm_imputation']:
         great_unprocessor = GReaTUnprocessor()
-        df_test = great_unprocessor.transform(generated_file_path=cst.file_data_test_imputed)
+        df_test = great_unprocessor.transform(generated_file_path=cst.file_data_test_imputed, split='test')
         index = pd.read_csv(cst.file_data_test)
         df_test['ID'] = index['ID'].copy(deep=True)
         df_test.set_index('ID', drop=True, inplace=True)
@@ -128,7 +128,7 @@ def get_test_data(run_config: dict) -> pd.DataFrame:
 def get_train_data(run_config: dict) -> pd.DataFrame:
     if run_config['use_llm_imputation']:
         great_unprocessor = GReaTUnprocessor()
-        df_train = great_unprocessor.transform(generated_file_path=cst.file_data_train_imputed)
+        df_train = great_unprocessor.transform(generated_file_path=cst.file_data_train_imputed, split='train')
     else:
         df_train = pd.read_csv(cst.file_data_train, index_col='ID')
 
@@ -159,6 +159,7 @@ def get_gen_data(run_config: dict) -> pd.DataFrame:
     generated_file_path = os.path.join(cst.path_generated_data, run_config['generated_file'])
     df_gen = great_unprocessor.transform(
         generated_file_path=generated_file_path,
+        split='train',
         max_target_by_acre=run_config['max_target_by_acre']
     )
 
