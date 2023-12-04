@@ -6,7 +6,7 @@ Objective of this challenge is to create a machine learning solution to predict 
 crops in India.
 
 ## 🏆 Challenge ranking
-The score of the challenge was the RMSE. 
+The score of the challenge was the RMSE.  
 Our solution was the best one with a RMSE equal to 100.36 🎉.
 
 The podium:  
