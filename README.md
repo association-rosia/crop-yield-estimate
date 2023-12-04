@@ -25,7 +25,7 @@ The podium:
 ## #️⃣ Command lines
 
 ```bash
-nohup python src/models/train_model.py --estimator_name <estimator_name> --nb_agents <nb_agents> &
+nohup python src/models/train_model.py --estimator_name <estimator_name> --task <task> --nb_agents <nb_agents> &
 ```
 
 ```bash
