@@ -7,7 +7,7 @@ crops in India.
 
 ## 🏆 Challenge ranking
 The score of the challenge was the RMSE. 
-Our solution was the best one with a RMSE equal to 100.36.
+Our solution was the best one with a RMSE equal to 100.36 🎉.
 
 The podium:  
 🥇 RosIA - 100.36  
@@ -33,6 +33,9 @@ python src/models/train_model.py --estimator_name <estimator_name> --task <task>
 ```bash
 python src/models/predict_model.py --ensemble_strategy <ensemble_strategy> --class_id <class_id_1> <class_id_2> <class_id_3> --low_id <low_id_1> <low_id_2> <low_id_3> --medium_id <medium_id_1> <medium_id_2> <medium_id_3> --high_id <high_id_1> <high_id_2> <high_id_3>
 ```
+
+## 🔬 References
+
 ## 📝 Citing
 
 ## 🛡️ License
