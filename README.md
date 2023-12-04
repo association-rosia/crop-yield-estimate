@@ -9,10 +9,10 @@ crops in India.
 The score of the challenge was the RMSE. 
 Our solution was the best one with a RMSE equal to 100.36.
 
-The podium:
-🥇 RosIA - 100.36
-🥈 ihar - 100.68
-🥉 belkasanek - 102.43
+The podium:  
+🥇 RosIA - 100.36  
+🥈 ihar - 100.68  
+🥉 belkasanek - 102.43  
 
 ## 🛠️ Data processing
 
