@@ -23,9 +23,10 @@ The podium:
 
 ### GReaT
 
-<img src="assets/great.png">
+We used GReaT LLM (GPT-2) implementation to generate new observations and impute missing values.  
+Here is how this proposed method works to create and impute data: 
 
-Borisov, V., Seßler, K., Leemann, T., Pawelczyk, M., & Kasneci, G. (2022). Language models are realistic tabular data generators. arXiv preprint arXiv:2210.06280.
+<img src="assets/great.png">
 
 ## 🏛️ Model architecture
 
