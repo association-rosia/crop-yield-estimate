@@ -41,9 +41,20 @@ python src/models/predict_model.py --ensemble_strategy <ensemble_strategy> --cla
 
 ## 📝 Citing
 
+```
+@misc{UrgellReberga:2023,
+  Author = {Baptiste Urgell and Louis Reberga},
+  Title = {Crop Yield Estimate},
+  Year = {2023},
+  Publisher = {GitHub},
+  Journal = {GitHub repository},
+  Howpublished = {\url{https://github.com/association-rosia/crop-yield-estimate}}
+}
+```
+
 ## 🛡️ License
 
-Project is distributed under [MIT License](https://github.com/association-rosia/flair-2/blob/main/LICENSE)
+Project is distributed under [MIT License](https://github.com/association-rosia/crop-forecasting/blob/main/LICENSE)
 
 ## 👨🏻‍💻 Contributors <a name="contributors"></a>
 
@@ -52,5 +63,3 @@ REBERGA <a href="https://twitter.com/rbrgAlou"><img src="https://abs.twimg.com/f
 
 Baptiste
 URGELL <a href="https://twitter.com/Baptiste2108"><img src="https://abs.twimg.com/favicons/twitter.3.ico" width="18px"/></a> <a href="https://www.linkedin.com/in/baptiste-urgell/"><img src="https://static.licdn.com/sc/h/akt4ae504epesldzj74dzred8" width="18px"/></a> <a href="baptiste.u@gmail.com"><img src="https://www.google.com/a/cpanel/aqsone.com/images/favicon.ico" width="18px"/></a> 
-
-
