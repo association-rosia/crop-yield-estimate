@@ -26,7 +26,7 @@ The podium:
 We used GReaT LLM (GPT-2) implementation to generate new observations and impute missing values.  
 Here is how this proposed method works to create and impute data: 
 
-<img src="assets/great.png">
+<img src="assets/great.png" style="width: 75%">
 
 ## 🏛️ Model architecture
 
