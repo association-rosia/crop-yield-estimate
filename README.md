@@ -23,6 +23,10 @@ The podium:
 
 ### GReaT
 
+<img src="assets/great.png">
+
+Borisov, V., Seßler, K., Leemann, T., Pawelczyk, M., & Kasneci, G. (2022). Language models are realistic tabular data generators. arXiv preprint arXiv:2210.06280.
+
 ## 🏛️ Model architecture
 
 <img src="assets/model-architecture.png">
@@ -42,6 +46,14 @@ python src/models/predict_model.py --ensemble_strategy <ensemble_strategy> --cla
 ```
 
 ## 🔬 References
+
+Hwang, Y., & Song, J. (2023). Recent deep learning methods for tabular data. Communications for Statistical Applications and Methods, 30(2), 215-226.
+
+Shwartz-Ziv, R., & Armon, A. (2022). Tabular data: Deep learning is not all you need. Information Fusion, 81, 84-90.
+
+Kavita, M., & Mathur, P. (2020, October). Crop yield estimation in India using machine learning. In 2020 IEEE 5th International Conference on Computing Communication and Automation (ICCCA) (pp. 220-224). IEEE.
+
+Borisov, V., Seßler, K., Leemann, T., Pawelczyk, M., & Kasneci, G. (2022). Language models are realistic tabular data generators. arXiv preprint arXiv:2210.06280.
 
 ## 📝 Citing
 
