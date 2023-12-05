@@ -19,9 +19,13 @@ The podium:
 
 ### Pre-processing 
 
+<img src="assets/preprocessing.png">
+
 ### GReaT
 
 ## 🏛️ Model architecture
+
+<img src="assets/model-architecture.png">
 
 ## #️⃣ Command lines
 
