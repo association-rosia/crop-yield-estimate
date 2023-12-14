@@ -39,6 +39,7 @@ Here is how this proposed method works to create and impute data:
 ```bash
 python src/models/train_model.py --estimator_name <estimator_name> --task <task> --nb_agents <nb_agents>
 ```
+View project's runs on [WandB](https://wandb.ai/association-rosia/crop-yield-estimate/).
 
 ### Create a submission
 
