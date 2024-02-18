@@ -1,6 +1,6 @@
 # 🌾 Digital Green Crop Yield Estimate Challenge
 
-<img src='assets/banner.png'>
+<img src='assets/crop-yield-estimate.png'>
 
 This challenge focuses on leveraging machine learning to predict rice and wheat crop yields per acre in India, with the aim of empowering smallholder farmers and addressing issues of poverty and malnutrition. The data collected by Digital Green through surveys provides insights into farming practices, environmental conditions, and crop yields. The ultimate goal is to revolutionize Indian agriculture, offer a global model for smallholder farmers, and contribute to sustainable farming practices amid climate change, thereby advancing global food security.
 
