@@ -8,7 +8,7 @@ This project was made possible by our compute partners [2CRSI](https://2crsi.com
 
 ## 🏆 Challenge ranking
 The score of the challenge was the RMSE.  
-Our solution was the best one (out of) with a RMSE equal to 100.3610312 🎉.
+Our solution was the best one (out of 678 teams) with a RMSE equal to 100.3610312 🎉.
 
 The podium:  
 🥇 RosIA - 100.3610312  
