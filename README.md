@@ -4,7 +4,7 @@
 
 This challenge focuses on leveraging machine learning to predict rice and wheat crop yields per acre in India, with the aim of empowering smallholder farmers and addressing issues of poverty and malnutrition. The data collected by Digital Green through surveys provides insights into farming practices, environmental conditions, and crop yields. The ultimate goal is to revolutionize Indian agriculture, offer a global model for smallholder farmers, and contribute to sustainable farming practices amid climate change, thereby advancing global food security.
 
-This project was made possible by our compute partners [2CRSI](https://2crsi.com/) and [NVIDIA](https://www.nvidia.com/).
+This project was made possible by our compute partners [2CRSi](https://2crsi.com/) and [NVIDIA](https://www.nvidia.com/).
 
 ## 🏆 Challenge ranking
 The score of the challenge was the RMSE.  
